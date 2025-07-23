@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
+import { FilterModal } from "./filter-modal"
 
 interface SearchResultItem {
   name: string;
@@ -229,14 +230,17 @@ export function SearchBox() {
             {textSearch ? <AlignLeft /> : <Brain />}
           </Button>*/}
 
-          <Button
+          {/*<Button
             className="h-7 w-7 font-semibold"
             variant="ghost"
             size="icon"
             disabled
           >
             <Filter />
-          </Button>
+          </Button>*/}
+          <FilterModal chemClassFilters={[]} cellTypeFilters={[]}>
+            <Filter />
+          </FilterModal>
 
           <Button
             onClick={handleSearchClick}
