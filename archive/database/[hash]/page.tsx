@@ -2,10 +2,10 @@ import { notFound } from "next/navigation"
 import Image from "next/image"
 import { CheckCheck, Upload, MoveUpRight, ExternalLink } from 'lucide-react'
 
-import CitePopup from "@/components/articleComponents/cite-button"
-import CopyButton from "@/components/articleComponents/copy-button"
-import ReportError from "@/components/articleComponents/report-button"
-import { SearchBreadcrumb } from "@/components/articleComponents/article-breadcrumb"
+import CitePopup from "@/components/entryComponents/cite-button"
+import CopyButton from "@/components/entryComponents/copy-button"
+import ReportError from "@/components/entryComponents/report-button"
+import { SearchBreadcrumb } from "@/components/entryComponents/article-breadcrumb"
 
 import { articleResultMetadata, notFoundMetadata } from "@/lib/seo"
 import { ArticleData, ArticlePageParams } from "@/types/article"

@@ -170,12 +170,13 @@ export default async function ChemicalPage({ params }: { params: Promise<{ chemi
 
 
 // pages/chemicals/[chemicalName].tsx
-import { SearchBreadcrumb } from "@/components/articleComponents/article-breadcrumb";
+import { SearchBreadcrumb } from "@/components/entryComponents/article-breadcrumb";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import ReferencePopup from "./refPopup";
-import ReportError from "@/components/articleComponents/report-button";
-import CopyButton from "@/components/articleComponents/copy-button";
+import ReportError from "@/components/entryComponents/report-button";
+import CopyButton from "@/components/entryComponents/copy-button";
+import CitePopup from "@/components/entryComponents/cite-button";
 
 // Enums and Interfaces (unchanged from your code)
 enum ChemicalRole {
@@ -420,7 +421,8 @@ const transformData = (data: PropertiesResponse): TransformedProperty[] => {
       if (nonOutliers.length > 0) {
         const min = Math.min(...nonOutliers).toFixed(2);
         const max = Math.max(...nonOutliers).toFixed(2);
-        primaryRange = `${min} - ${max}`;
+        if (min !== max) primaryRange = `${min}, ${max}`;
+        primaryRange = min;
       }
     }
 
@@ -484,7 +486,7 @@ const PropertyTable: React.FC<{ transformedData: TransformedProperty[] }> = ({ t
                 ) : ("-")}
               </td>
               <td className="border border-color px-4 py-2">
-                {item.primary_range || '-'}
+                {item.primary_range || '—'}
                 {/*{item.primary_display_unit || '-'}*/}
                 {item.primary_display_unit ? (
                   <span dangerouslySetInnerHTML={{ __html: item.primary_display_unit }} />
@@ -537,6 +539,13 @@ export default async function ChemicalPage({ params }: { params: Promise<{ chemi
 
   const transformedData = transformData(data);
 
+  const citationData = {
+    name: data.properties[0].preferred_name,
+    date_written: "N/A",
+    written_by: ["CryoDB Foundation"],
+    hash: encodeURIComponent(data.properties[0].preferred_name.toLowerCase())
+  };
+
   return (
     <div className="pt-4 px-4 max-w-[1800px] mx-auto">
       {/* Breadcrumb */}
@@ -555,6 +564,7 @@ export default async function ChemicalPage({ params }: { params: Promise<{ chemi
             </p>
           </div>
           <div className="flex items-center gap-2.5 mt-3">
+            <CitePopup citationsData={citationData} />
             <ReportError hash={data.properties[0].preferred_name} name={data.properties[0].preferred_name} />
             <CopyButton token={data.properties[0].preferred_name} />
           </div>
@@ -563,9 +573,9 @@ export default async function ChemicalPage({ params }: { params: Promise<{ chemi
             <PropertyTable transformedData={transformedData} />
           </div>
         </div>
-      {/*</div>
+      {/*</div>*/}
 
-      <pre>{JSON.stringify(data, null, 2)}</pre>*/}
+      <pre>{JSON.stringify(data, null, 2)}</pre>
     </div>
   );
 }

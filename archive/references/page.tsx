@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { Metadata } from "next";
-import { ReferenceIndexBreadcrumb } from "@/components/refIndexComponents/refIndex-breadcrumb";
+import { ReferenceIndexBreadcrumb } from "../refIndexComponents/refIndex-breadcrumb";
 import { referenceIndexMetadata } from "@/lib/seo";
-import PaginationComponent from "@/components/refIndexComponents/pagination-component";
-import SearchComponent from "@/components/refIndexComponents/search-component"; // Import the new component
+import PaginationComponent from "../refIndexComponents/pagination-component";
+import SearchComponent from "../refIndexComponents/search-component"; // Import the new component
 
 export const metadata: Metadata = referenceIndexMetadata;
 
