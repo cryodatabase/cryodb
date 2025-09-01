@@ -573,9 +573,9 @@ export default async function ChemicalPage({ params }: { params: Promise<{ chemi
             <PropertyTable transformedData={transformedData} />
           </div>
         </div>
-      {/*</div>*/}
+      {/*</div>
 
-      <pre>{JSON.stringify(data, null, 2)}</pre>
+      <pre>{JSON.stringify(data, null, 2)}</pre>*/}
     </div>
   );
 }
