@@ -25,7 +25,7 @@ export default function PaginationComponent({ data, limit }: { data: PaginationP
   const currentPage = data.currentPage;
 
   const handlePageChange = (newPage: number) => {
-    router.push(`/new/database?page=${newPage}&limit=${limit}`);
+    router.push(`/database?page=${newPage}&limit=${limit}`);
   };
 
   // Generate page numbers to display

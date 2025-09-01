@@ -1,100 +1,107 @@
-import Link from "next/link"
-import { Metadata } from "next"
+import { headers } from "next/headers";
+import { notFound } from "next/navigation";
+import Link from "next/link";
+import PaginationComponent from "./paginationComponent";
 
-import PaginationComponent from "@/components/databasePage/pagination-component"
-// import { DatabaseBreadcrumb } from "@/components/databasePage/database-breadcrumb"
-import { FilterPopup } from "@/components/databasePage/filterComponent/filter-popup"
+interface DatabaseObject {
+  id: string;
+  inchikey: string;
+  preferred_name: string;
+  role: string;
+  synonyms: string[];
+}
 
-import { databaseIndexMetadata } from "@/lib/seo"
-import { IndexResponse } from "@/types/database"
-
-export const metadata: Metadata = databaseIndexMetadata;
-
-export default async function IndexPage({ searchParams }: { searchParams: Promise<{ page?: string; limit?: string }> }) {
-  const pageParams = await searchParams;
-  const page = parseInt(pageParams.page || "1", 10);
-  const limit = parseInt(pageParams.limit || "36", 10);
-
-  // Validate pagination parameters
-  if (page < 1 || limit < 1) {
-    return <div className="container text-red-600">Invalid page or limit</div>;
+interface DatabaseResponse {
+  data: DatabaseObject[];
+  pagination: {
+    currentPage: number;
+    itemsPerPage: number;
+    totalItems: number;
+    totalPages: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
   }
+}
 
-  // Fetch data server-side
+interface FetchDatabaseParams {
+  pageInt: number;
+  limitInt: number;
+  url: string;
+}
+
+async function fetchDatabase({ pageInt, limitInt, url }: FetchDatabaseParams): Promise<DatabaseResponse | null> {
   try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BASE_URL}/api/article/index?page=${page}&limit=${limit}`,
-      {
-        method: "GET",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        cache: "no-store", // Ensure dynamic SSR
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error("Failed to fetch data");
-    }
-
-    const data: IndexResponse = await response.json();
-
-    return (
-      <div className="mx-auto px-4 py-8 max-w-6xl min-h-[calc(100vh-128px)] flex flex-col justify-between">
-        <div>
-        {/*<DatabaseBreadcrumb />*/}
-
-        <FilterPopup chemClassFilters={data.chemClassFilters} cellTypeFilters={data.cellTypeFilters} />
-
-        <div className="searchResults">
-          {data.entries.length > 0 ? (
-            data.entries.map((result, index) => (
-              <Link
-                key={index}
-                href={`/database/${result.hash}`}
-                className="group flex flex-col sm:flex-row gap-4 py-4"
-              >
-                <div className="flex-1">
-                  <h2 className="text-xl font-semibold group-hover:underline">{result.name}</h2>
-                  <p className="text-muted-foreground line-clamp-3 leading-[1.3]">{result.overview}</p>
-                </div>
-                {result.structure_image && (
-                  <div className="w-full sm:w-40 flex-shrink-0 items-center flex dark:bg-white rounded-md dark:border-none border border-input">
-                    <img
-                      className="w-full h-auto max-h-[100px] object-cover rounded-md"
-                      alt="Structural Diagram"
-                      src={result.structure_image}
-                    />
-                  </div>
-                )}
-              </Link>
-            ))
-          ) : (
-            <div className="noResults">
-              <h4>No Results Found</h4>
-            </div>
-          )}
-        </div>
-        </div>
-
-        <div>
-        <PaginationComponent
-          initialData={data}
-          //page={page}
-          limit={limit}
-        />
-        </div>
-
-        <style>{`
-        footer{
-          display: none;
-        }
-        `}</style>
-      </div>
-    );
-  } catch (error) {
-    console.error("Error fetching data:", error);
-    return <div className="container text-red-600">An error occurred while loading the database.</div>;
+    const response = await fetch(`${url}/api/new/chemicals/database?page=${pageInt}&limit=${limitInt}`);
+    if (!response.ok) return null;
+    
+    const data = response.json();
+    return data;
+  } catch (err) {
+    console.log(err);
+    return null;
   }
+}
+
+export default async function DatabasePage({ searchParams }: { searchParams: Promise<{ page?: string; limit?: string}>}) {
+  const { page, limit } = await searchParams;
+  const pageInt = parseInt(page || "1", 10);
+  const limitInt = parseInt(limit || "36", 10);
+
+  const headersList = await headers();
+  const host = headersList.get("host");
+  const protocol = headersList.get("x-forwarded-proto") || "http";
+  const url = `${protocol}://${host}`;
+
+  const data = await fetchDatabase({ pageInt, limitInt, url });
+  if (!data) return notFound();
+
+  return(
+    <div className="mx-auto px-4 py-8 max-w-6xl min-h-[calc(100vh-128px)] flex flex-col justify-between">
+      <div className="searchResults">
+        {data?.data.length > 0 ? (
+          data.data.map((result, index) => (
+            <Link
+              key={index}
+              href={`/database/${encodeURIComponent(result.preferred_name.toLowerCase())}`}
+              className="group flex flex-col py-4"
+            >
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-semibold group-hover:underline">{result.preferred_name}</h2>
+                <p className="text-background bg-primary px-1 py-0.5 rounded-full text-sm font-semibold line-clamp-3 leading-[1.3]">{result.role}</p>
+              </div>
+              {result.inchikey && (
+                <div className="w-full text-xs text-muted-foreground">
+                {result.inchikey}
+                </div>
+              )}
+              {result.synonyms.length > 0 && (
+                <div className="flex gap-1.5 mt-1.5 text-muted-foreground">
+                  <span className="font-semibold">
+                    Also known as:
+                  </span>
+                  {result.synonyms.map((synonym, index) => (
+                    <div key={index}>
+                      {synonym}{index !== result.synonyms.length - 1 && (",")}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </Link>
+          ))
+        ) : (
+          <div className="noResults">
+            <h4>No Results Found</h4>
+          </div>
+        )}
+      </div>
+
+      <PaginationComponent data={data.pagination} limit={limitInt} />
+
+      <style>{`
+      footer{
+        display: none;
+      }
+      `}</style>
+    </div>
+  );
 }

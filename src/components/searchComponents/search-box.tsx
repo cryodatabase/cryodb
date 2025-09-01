@@ -9,18 +9,18 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
-import { FilterModal } from "./filter-modal"
+import { FilterModal } from "@/components/searchComponents/filter-modal"
 
-interface SearchResultItem {
-  name: string;
-  hash: string;
+interface Chemical {
+  preferred_name: string;
 }
+
 
 export function SearchBox() {
   //const [textSearch, setTextSearch] = useState<boolean>(true)
   const [searchTerm, setSearchTerm] = useState<string>("")
   const [errorText, setErrorText] = useState<string>("")
-  const [results, setResults] = useState<SearchResultItem[]>([])
+  const [results, setResults] = useState<Chemical[]>([])
   const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false)
   const [isTyping, setIsTyping] = useState<boolean>(false)
   const [isFetching, setIsFetching] = useState<boolean>(false)
@@ -51,15 +51,11 @@ export function SearchBox() {
       const fetchResults = async () => {
         setIsFetching(true)
         try {
-          const response = await fetch("/api/quickSearch", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ search_query: debouncedSearchTerm }),
-          })
+          const response = await fetch(`/api/new/chemicals/search/quickSearch?query=${encodeURIComponent(debouncedSearchTerm)}`)
           if (!response.ok) throw new Error("Failed to fetch")
           const data = await response.json()
-          setResults(data.results || [])
-          console.log(data.results)
+          setResults(data.response || [])
+          console.log(data.response)
           setIsDropdownOpen(true)
         } catch (error) {
           console.error("Search API error:", error)
@@ -96,7 +92,7 @@ export function SearchBox() {
     }
 
     const encodedSearchTerm = encodeURIComponent(searchTerm)
-    window.location.href = `/database/search/query=${encodedSearchTerm}`
+    window.location.href = `/search/${encodedSearchTerm}`
 
     /*window.location.href = textSearch
       ? `/database/search/query=${encodedSearchTerm}`
@@ -119,7 +115,7 @@ export function SearchBox() {
       setFocusedIndex((prev) => (prev > 0 ? prev - 1 : -1))
     } else if (event.key === "Enter" && focusedIndex >= 0) {
       event.preventDefault()
-      window.location.href = `/database/${results[focusedIndex].hash}`
+      window.location.href = `/database/${encodeURIComponent(results[focusedIndex].preferred_name)}`
       setIsDropdownOpen(false)
     } else if (event.key === "Escape") {
       setIsDropdownOpen(false)
@@ -191,7 +187,7 @@ export function SearchBox() {
             ) : results.length > 0 ? (
               results.map((result, index) => (
                 <Link
-                  href={`/database/${result.hash}`}
+                  href={`/database/${encodeURIComponent(result.preferred_name.toLowerCase())}`}
                   key={index}
                   className={cn(
                     "px-2 py-1.5 text-sm text-foreground rounded-sm w-full",
@@ -205,10 +201,7 @@ export function SearchBox() {
                     setFocusedIndex(-1)
                   }}
                 >
-                  {result.name}
-                  <span className="text-xs text-muted-foreground font-semibold hidden sm:block">
-                    {result.hash}
-                  </span>
+                  {result.preferred_name}
                 </Link>
               ))
             ) : (

@@ -20,7 +20,7 @@ import Image from "next/image"
 
 import { Button } from "@/components/ui/button"
 //import { ArrowBigRightDash } from "lucide-react"
-import { SearchBox } from "./searchBox"
+import { SearchBox } from "@/components/searchComponents/search-box";
 import { searchMetadata } from "@/lib/seo"
 
 export const metadata: Metadata = searchMetadata;
