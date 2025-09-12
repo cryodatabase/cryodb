@@ -1,4 +1,4 @@
-import { FilterParams } from "../../../archive/types/filters"
+/*import { FilterParams } from "../../../../arc/archive/types/filters"
 
 /**
  * Parses and decodes a URL query string (specifically for filters) into an object of key-value pairs.
@@ -18,7 +18,7 @@ import { FilterParams } from "../../../archive/types/filters"
  *   key2: ["value2", "value3"],
  *   key3: "value4"
  * }
- */
+ * /
 
 export const getFiltersFromParams = (params: { filters: string }): FilterParams => {
   const decodedParams = decodeURIComponent(params.filters);
@@ -46,3 +46,4 @@ export const getFiltersFromParams = (params: { filters: string }): FilterParams 
   
   return filters;
 };
+*/

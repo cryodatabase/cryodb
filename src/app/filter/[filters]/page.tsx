@@ -1,5 +1,5 @@
 // /app/filters/[filters]/page.tsx
-import Link from "next/link"
+/*import Link from "next/link"
 import { Metadata } from "next"
 import { notFound } from "next/navigation"
 
@@ -7,7 +7,7 @@ import FilterPopup from "@/components/databasePage/filterComponent/filter-page-p
 import { FilterBreadcrumb } from "@/components/databasePage/filterComponent/filters/filter-breadcrumb"
 
 import { filtersMetadata } from "@/lib/seo"
-import { ApiResponse, FilterPageProps } from "../../../../archive/types/filters"
+import { ApiResponse, FilterPageProps } from "../../../../../arc/archive/types/filters"
 import { getFiltersFromParams } from "@/utils/decodeParams/filter-page"
 
 export const metadata: Metadata = filtersMetadata;
@@ -118,4 +118,10 @@ export default async function FilterPage({ params }: { params: Promise<FilterPag
       `}</style>
     </div>
   );
+}*/
+
+import { notFound } from "next/navigation";
+
+export default function Page(){
+  return notFound();
 }
