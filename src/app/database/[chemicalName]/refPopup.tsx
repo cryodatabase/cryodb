@@ -78,14 +78,21 @@ export default function ReferencePopup(references: ReferencesProp) {
                       &quot;{references.references[paper_id].quote}&quot;
                     </p>
                   )}
-                  <a
-                    href={references.references[paper_id].doi || '#'}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-purple-600 text-sm dark:text-purple-500 hover:underline"
-                  >
-                    {references.references[paper_id].doi || paper_id}
-                  </a>
+                  {paper_id ? (
+                    <a
+                      href={`/database/papers/${paper_id}` || '#'}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-purple-600 text-sm dark:text-purple-500 hover:underline"
+                    >
+                      {paper_id || references.references[paper_id].doi}
+                    </a>
+                  ) : (
+                    <p className="text-purple-600 text-sm dark:text-purple-500 hover:underline">
+                      {paper_id || references.references[paper_id].doi}
+                    </p>
+                  )}
+                  
 
                 </div>
               ))

@@ -6,7 +6,7 @@ import PaginationComponent from "@/components/databasePage/pagination-component"
 import { FilterPopup } from "@/components/databasePage/filterComponent/filter-popup"
 
 import { databaseIndexMetadata } from "@/lib/seo"
-import { IndexResponse } from "@/types/database"
+import { IndexResponse } from "../types/database"
 
 export const metadata: Metadata = databaseIndexMetadata;
 

@@ -31,7 +31,7 @@ interface FetchDatabaseParams {
 
 async function fetchDatabase({ pageInt, limitInt, url }: FetchDatabaseParams): Promise<DatabaseResponse | null> {
   try {
-    const response = await fetch(`${url}/api/new/chemicals/database?page=${pageInt}&limit=${limitInt}`);
+    const response = await fetch(`${url}/api/chemicals/database?page=${pageInt}&limit=${limitInt}`);
     if (!response.ok) return null;
     
     const data = response.json();

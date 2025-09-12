@@ -1,6 +1,8 @@
 // app/api/tables/route.ts
 import { NextResponse } from 'next/server';
-import { query } from '@/lib/new/db';
+import { query } from '@/lib/database/db';
+
+// todo: purge
 
 export async function GET() {
   try {

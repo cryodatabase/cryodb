@@ -23,7 +23,7 @@ interface SearchResponse {
 
 async function fetchSearchResults(encodedSearchTerm: string, url: string): Promise<SearchResponse | null> {
   try {
-    const response = await fetch(`${url}/api/new/chemicals/search?query=${encodedSearchTerm}`);
+    const response = await fetch(`${url}/api/chemicals/search?query=${encodedSearchTerm}`);
     if (!response.ok) return null;
 
     const data = response.json();

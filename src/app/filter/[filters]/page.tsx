@@ -7,7 +7,7 @@ import FilterPopup from "@/components/databasePage/filterComponent/filter-page-p
 import { FilterBreadcrumb } from "@/components/databasePage/filterComponent/filters/filter-breadcrumb"
 
 import { filtersMetadata } from "@/lib/seo"
-import { ApiResponse, FilterPageProps } from "@/types/filters"
+import { ApiResponse, FilterPageProps } from "../../../../archive/types/filters"
 import { getFiltersFromParams } from "@/utils/decodeParams/filter-page"
 
 export const metadata: Metadata = filtersMetadata;

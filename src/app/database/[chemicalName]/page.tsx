@@ -1,175 +1,3 @@
-/*import { SearchBreadcrumb } from "@/components/articleComponents/article-breadcrumb";
-import { headers } from "next/headers";
-import { notFound } from "next/navigation";
-import { stringify } from "querystring";
-
-// Enum for ChemicalRole
-enum ChemicalRole {
-  CPA = "CPA",
-  ADJUVANT = "ADJUVANT",
-  CARRIER = "CARRIER",
-}
-
-// Enum for PropertyType based on FACT_UNIT_DEFAULTS
-enum PropertyType {
-  MOLECULAR_MASS = "MOLECULAR_MASS",
-  SOLUBILITY = "SOLUBILITY",
-  VISCOSITY = "VISCOSITY",
-  TG_PRIME = "TG_PRIME",
-  PARTITION_COEFFICIENT = "PARTITION_COEFFICIENT",
-  DIELECTRIC_CONSTANT = "DIELECTRIC_CONSTANT",
-  THERMAL_CONDUCTIVITY = "THERMAL_CONDUCTIVITY",
-  HEAT_CAPACITY = "HEAT_CAPACITY",
-  THERMAL_EXPANSION_COEFFICIENT = "THERMAL_EXPANSION_COEFFICIENT",
-  CRYSTALLIZATION_TEMPERATURE = "CRYSTALLIZATION_TEMPERATURE",
-  DIFFUSION_COEFFICIENT = "DIFFUSION_COEFFICIENT",
-  HYDROGEN_BOND_DONORS_ACCEPTORS = "HYDROGEN_BOND_DONORS_ACCEPTORS",
-  SOURCE_OF_COMPOUND = "SOURCE_OF_COMPOUND",
-  GRAS_CERTIFICATION = "GRAS_CERTIFICATION",
-  MELTING_POINT = "MELTING_POINT",
-  HYDROPHOBICITY = "HYDROPHOBICITY",
-  DENSITY = "DENSITY",
-  REFRACTIVE_INDEX = "REFRACTIVE_INDEX",
-  SURFACE_TENSION = "SURFACE_TENSION",
-  PH = "PH",
-  OSMOLALITY_OSMOLARITY = "OSMOLALITY_OSMOLARITY",
-  POLAR_SURFACE_AREA = "POLAR_SURFACE_AREA",
-}
-
-// Enum for units based on FACT_UNIT_DEFAULTS
-enum PropertyUnit {
-  // MOLECULAR_MASS
-  G_PER_MOL = "g/mol",
-  DA = "Da",
-  KDA = "kDa",
-  // SOLUBILITY
-  MG_PER_ML = "mg/mL",
-  G_PER_100ML = "g/100 mL",
-  PERCENT_W_V = "% w/v",
-  // VISCOSITY
-  MPAS = "mPa.s",
-  CP = "cP",
-  // TG_PRIME, CRYSTALLIZATION_TEMPERATURE, MELTING_POINT
-  DEGC = "degC",
-  DEGK = "degK",
-  // PARTITION_COEFFICIENT
-  LOGP = "logP",
-  // THERMAL_CONDUCTIVITY
-  W_PER_MK = "W/(m.K)",
-  // HEAT_CAPACITY
-  J_PER_GK = "J/(g.K)",
-  J_PER_MOLK = "J/(mol.K)",
-  // THERMAL_EXPANSION_COEFFICIENT
-  PER_K = "1/K",
-  // DIFFUSION_COEFFICIENT
-  M2_PER_S = "m2/s",
-  CM2_PER_S = "cm2/s",
-  // HYDROGEN_BOND_DONORS_ACCEPTORS
-  COUNT = "count",
-  // SOURCE_OF_COMPOUND
-  TEXT = "text",
-  // GRAS_CERTIFICATION
-  BOOLEAN = "boolean",
-  // HYDROPHOBICITY
-  QUALITATIVE = "qualitative",
-  // DENSITY
-  G_PER_CM3 = "g/cm3",
-  KG_PER_M3 = "kg/m3",
-  // SURFACE_TENSION
-  MN_PER_M = "mN/m",
-  DYN_PER_CM = "dyn/cm",
-  // OSMOLALITY_OSMOLARITY
-  OSMOL_PER_KG = "Osmol/kg",
-  OSMOL_PER_L = "Osmol/L",
-  // POLAR_SURFACE_AREA
-  A2 = "A2",
-}
-
-// Interface for the source of a property value
-interface Source {
-  doi: string | null;
-  quote: string | null;
-  paper_id: string | null;
-  experiment_quote: string | null;
-}
-
-// Interface for a property value
-interface PropertyValue {
-  unit: PropertyUnit | string; // Allow string for flexibility with unexpected units
-  value: string; // String to handle both point values (e.g., "78") and ranges (e.g., "16 – 19")
-  sources: Source[];
-}
-
-// Interface for a single property
-interface AgentProperty {
-  chemical_id: string; // UUID for the chemical
-  preferred_name: string; // e.g., "Dimethyl Sulfoxide"
-  role: ChemicalRole; // e.g., "CPA"
-  prop_type: PropertyType; // e.g., "MOLECULAR_MASS"
-  property_values: PropertyValue[];
-}
-
-// Interface for the top-level response
-export interface PropertiesResponse {
-  properties: AgentProperty[];
-}
-
-async function fetchChemical(chemicalName: string, url: string): Promise<PropertiesResponse | null> {
-  try {
-    const response = await fetch(`${url}/api/new/chemicals/${chemicalName}`);
-    if (!response.ok) return null;
-
-    const data = response.json();
-    return data;
-  } catch (err) {
-    console.log(err);
-    return null;
-  }
-}
-
-export default async function ChemicalPage({ params }: { params: Promise<{ chemicalName: string }> }) {
-  const { chemicalName } = await params;
-  const headersList = await headers();
-  const host = headersList.get("host");
-  const protocol = headersList.get("x-forwarded-proto") || "http";
-  const url = `${protocol}://${host}`;
-
-  const data = await fetchChemical(chemicalName, url);
-  if (!data) return notFound();
-  
-  const entry = data.properties;
-  console.log(data);
-
-  return(
-    <>
-      <div className="pt-4">
-        {/* Breadcrumb * /}
-        <SearchBreadcrumb agentName={entry[0].preferred_name} />
-  
-        {/* Content Box * /}
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] max-w-[1800px] pt-2 mx-auto">
-          {/* Main Content * /}
-          <div className="flex flex-col mb-8">
-            <h1 className="flex items-center gap-1 flex-wrap text-3xl font-semibold">
-              {entry[0].preferred_name}
-              {/*{entry.chemical_formula_html && (
-                <span className="flex items-center gap-1 max-md:hidden">
-                  - <span dangerouslySetInnerHTML={{ __html: entry.chemical_formula_html }} />
-                </span>
-              )}* /}
-            </h1>
-          </div>
-        </div>
-      </div>
-      <pre>
-        {JSON.stringify(data, null, 4)}
-      </pre>
-    </>
-  );
-}*/
-
-
-// pages/chemicals/[chemicalName].tsx
 import { SearchBreadcrumb } from "@/components/entryComponents/article-breadcrumb";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
@@ -255,6 +83,8 @@ interface PropertyValue {
 }
 
 interface AgentProperty {
+  synonyms: string[];
+  inchikey: string;
   chemical_id: string;
   preferred_name: string;
   role: ChemicalRole;
@@ -462,7 +292,8 @@ const transformData = (data: PropertiesResponse): TransformedProperty[] => {
 // Component to Render Transformed Data
 const PropertyTable: React.FC<{ transformedData: TransformedProperty[] }> = ({ transformedData }) => {
   return (
-    <div className="overflow-x-auto border border-color rounded-2xl">
+    <div className="w-full overflow-x-scroll">
+    <div className="overflow-x-auto min-w-[1050px] border border-color rounded-2xl">
       <table className="min-w-full">
         <thead>
           <tr className="bg-input">
@@ -509,13 +340,14 @@ const PropertyTable: React.FC<{ transformedData: TransformedProperty[] }> = ({ t
         </tbody>
       </table>
     </div>
+    </div>
   );
 };
 
 // Fetch function (unchanged)
 async function fetchChemical(chemicalName: string, url: string): Promise<PropertiesResponse | null> {
   try {
-    const response = await fetch(`${url}/api/new/chemicals/${chemicalName}`);
+    const response = await fetch(`${url}/api/chemicals/${chemicalName}`);
     if (!response.ok) return null;
 
     const data = await response.json(); // Await the JSON parsing
@@ -529,6 +361,7 @@ async function fetchChemical(chemicalName: string, url: string): Promise<Propert
 // Main Page Component
 export default async function ChemicalPage({ params }: { params: Promise<{ chemicalName: string }> }) {
   const { chemicalName } = await params;
+  
   const headersList = await headers();
   const host = headersList.get("host");
   const protocol = headersList.get("x-forwarded-proto") || "http";
@@ -547,7 +380,7 @@ export default async function ChemicalPage({ params }: { params: Promise<{ chemi
   };
 
   return (
-    <div className="pt-4 px-4 max-w-[1800px] mx-auto">
+    <div className="pt-4 px-4 min-h-[calc(100vh-428px)] max-w-[1800px] mx-auto">
       {/* Breadcrumb */}
       <SearchBreadcrumb agentName={data.properties[0].preferred_name} />
 
@@ -563,10 +396,25 @@ export default async function ChemicalPage({ params }: { params: Promise<{ chemi
               {data.properties[0].role}
             </p>
           </div>
-          <div className="flex items-center gap-2.5 mt-3">
-            <CitePopup citationsData={citationData} />
-            <ReportError hash={data.properties[0].preferred_name} name={data.properties[0].preferred_name} />
-            <CopyButton token={data.properties[0].preferred_name} />
+
+          <div className="flex mt-3 gap-4 justify-between items-center">
+            <div className="font-semibold capitalize">
+              <h3 className="text-muted-foreground">
+                Also Known As:
+                <br/>
+                {data.properties[0].synonyms.map((synonym, index) => (
+                  <span key={index}>
+                    {synonym}{index + 1 !== data.properties[0].synonyms.length && ", "}
+                  </span>
+                ))}
+              </h3>
+            </div>
+
+            <div className="flex items-center gap-2.5">
+              <CitePopup citationsData={citationData} />
+              <ReportError hash={data.properties[0].preferred_name} name={data.properties[0].preferred_name} />
+              <CopyButton token={data.properties[0].preferred_name} />
+            </div>
           </div>
 
           <div className="mt-6">

@@ -1,4 +1,4 @@
-import { FilterParams } from "@/types/filters"
+import { FilterParams } from "../../../archive/types/filters"
 
 /**
  * Parses and decodes a URL query string (specifically for filters) into an object of key-value pairs.

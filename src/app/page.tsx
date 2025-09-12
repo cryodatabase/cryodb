@@ -22,6 +22,8 @@ import { Button } from "@/components/ui/button"
 //import { ArrowBigRightDash } from "lucide-react"
 import { SearchBox } from "@/components/searchComponents/search-box"
 import { searchMetadata } from "@/lib/seo"
+import Link from "next/link"
+import { ArrowBigRight } from "lucide-react"
 
 export const metadata: Metadata = searchMetadata;
 
@@ -83,6 +85,13 @@ export default function Search() {
                 width={14} 
               />
             </a>
+          </Button>
+
+          <Button variant="link" className="text-muted-foreground" asChild>
+            <Link href="/database/papers" className="flex align-center gap-3 hover:gap-4">
+              Paper Database
+              <ArrowBigRight className="size-[18px]" />
+            </Link>
           </Button>
         </div>
       </div>

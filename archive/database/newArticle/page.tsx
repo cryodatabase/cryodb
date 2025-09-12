@@ -6,7 +6,7 @@ import CopyButton from "@/components/entryComponents/copy-button"
 import ReportError from "@/components/entryComponents/report-button"
 import { SearchBreadcrumb } from "@/components/entryComponents/article-breadcrumb"
 
-import { ArticleEntry } from "@/types/article"
+import { ArticleEntry } from "../../types/article"
 
 // Basic numeric value with optional units and notes
 type MeasuredValue = {

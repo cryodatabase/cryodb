@@ -51,7 +51,7 @@ export function SearchBox() {
       const fetchResults = async () => {
         setIsFetching(true)
         try {
-          const response = await fetch(`/api/new/chemicals/search/quickSearch?query=${encodeURIComponent(debouncedSearchTerm)}`)
+          const response = await fetch(`/api/chemicals/search/quickSearch?query=${encodeURIComponent(debouncedSearchTerm)}`)
           if (!response.ok) throw new Error("Failed to fetch")
           const data = await response.json()
           setResults(data.response || [])

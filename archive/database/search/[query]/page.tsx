@@ -5,7 +5,7 @@ import { notFound } from 'next/navigation'
 import { SearchBreadcrumb } from "@/components/searchComponents/searchPage/search-breadcrumb"
 
 import { searchResultsMetadata } from "@/lib/seo"
-import { SearchResponse, SearchPageParams } from "@/types/search"
+import { SearchResponse, SearchPageParams } from "../../../types/search"
 import { decodeParams } from "@/utils/decodeParams/search-page"
 
 export async function generateMetadata({ params }: { params: Promise<SearchPageParams> }) {

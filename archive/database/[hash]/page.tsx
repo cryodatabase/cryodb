@@ -8,7 +8,7 @@ import ReportError from "@/components/entryComponents/report-button"
 import { SearchBreadcrumb } from "@/components/entryComponents/article-breadcrumb"
 
 import { articleResultMetadata, notFoundMetadata } from "@/lib/seo"
-import { ArticleData, ArticlePageParams } from "@/types/article"
+import { ArticleData, ArticlePageParams } from "../../types/article"
 
 async function getArticleData(hash: string): Promise<ArticleData | null> {
   try {
