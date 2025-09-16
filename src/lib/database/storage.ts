@@ -267,10 +267,16 @@ export class DatabaseStorage implements IStorage {
 
   // Get experiments and formulations for a paper using the new view
   //async getPaperExperimentsAndFormulations(paperId: string): Promise<any[]> {
-  async getPaperExperimentsAndFormulations(paperId: string): Promise<Paper[]> {
-    const result = await pool.query(`
+  async getPaperExperimentsAndFormulations(paperId: string): Promise<any[]> {
+    /* const result = await pool.query(`
       SELECT *
       FROM v_paper_experiments_formulations
+      WHERE paper_id = $1
+      ORDER BY experiment_id, formulation_id, component_id
+    `, [paperId]); */
+    const result = await pool.query(`
+      SELECT *
+      FROM v_paper_experiments_formulations_new
       WHERE paper_id = $1
       ORDER BY experiment_id, formulation_id, component_id
     `, [paperId]);

@@ -1,4 +1,6 @@
 import { pgTable, text, serial, integer, boolean, jsonb, decimal, uuid } from "drizzle-orm/pg-core";
+import { createInsertSchema } from "drizzle-zod";
+import { z } from "zod";
 
 // CPA Chemicals schema (ChemSpider-style chemicals table)
 export const cpaChemicals = pgTable("cpa_chemicals", {
@@ -160,6 +162,44 @@ export type PaperData = {
   chemical_agents: ChemicalAgent[];
   agent_properties: AgentProperty[];
 };
+
+export const insertPaperSchema = createInsertSchema(papers).omit({
+  id: true,
+});
+
+// Insert schemas
+export const insertCpaChemicalSchema = createInsertSchema(cpaChemicals).omit({
+  id: true,
+});
+
+export const insertChemicalPropertySchema = createInsertSchema(chemicalProperties).omit({
+  id: true,
+});
+
+export const insertChemicalPropertyValueSchema = createInsertSchema(chemicalPropertyValues).omit({
+  id: true,
+});
+
+export const insertCpaReferenceSchema = createInsertSchema(cpaReferences).omit({
+  id: true,
+});
+
+export const insertChemicalAgentSchema = createInsertSchema(chemicalAgents).omit({
+  id: true,
+});
+
+export const insertAgentPropertySchema = createInsertSchema(agentProperties).omit({
+  id: true,
+});
+
+// Types
+export type InsertPaper = z.infer<typeof insertPaperSchema>;
+export type InsertCpaChemical = z.infer<typeof insertCpaChemicalSchema>;
+export type InsertChemicalProperty = z.infer<typeof insertChemicalPropertySchema>;
+export type InsertChemicalPropertyValue = z.infer<typeof insertChemicalPropertyValueSchema>;
+export type InsertCpaReference = z.infer<typeof insertCpaReferenceSchema>;
+export type InsertChemicalAgent = z.infer<typeof insertChemicalAgentSchema>;
+export type InsertAgentProperty = z.infer<typeof insertAgentPropertySchema>;
 
 export type Paper = typeof papers.$inferSelect;
 export type CpaChemical = typeof cpaChemicals.$inferSelect;

@@ -54,7 +54,7 @@ export default async function PapersDatabase() {
           <h1>No Results Found</h1>
         )}
       </div>
-      <pre>{JSON.stringify(data, null, 2)}</pre>
+      {/*<pre>{JSON.stringify(data, null, 2)}</pre>*/}
 
       <style>{`
       footer{

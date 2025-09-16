@@ -3,16 +3,24 @@ import { Paper } from "@/lib/database/schema";
 import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Link } from "lucide-react";
+import ExperimentTable from "./experimentTable";
+import { ExperimentBreadcrumb } from "./experimentBreadcrumb";
 
 // todo: add experiment and other tables
 
-async function fetchPaper(paperId: string, url: string): Promise<Paper | null>  {
+interface PaperResponse {
+  paper: Paper;
+  experiments_formulations_data: any[];
+}
+
+async function fetchPaper(paperId: string, url: string): Promise<PaperResponse | null>  {
   try{
     const response = await fetch(`${url}/api/papers/${paperId}`);
     if (!response.ok) throw new Error("API Handler Error");
 
     const data = await response.json();
-    return data.paper;
+    //return data.paper;
+    return data;
 
   } catch (err) {
     console.log(err);
@@ -29,15 +37,25 @@ export default async function PaperPage({ params }: { params: Promise<{paperId: 
   const protocol = headersList.get("x-forwarded-proto") || "http";
   const url = `${protocol}://${host}`;
 
-  const data = await fetchPaper(paperId, url);
-  if (!data) return notFound();
+  const responseData = await fetchPaper(paperId, url);
+  if (!responseData) return notFound();
+
+  const data = responseData.paper;
 
   return(
-    <div className="min-h-[calc(100vh-428px)]">
-      <h1 className="text-2xl font-semibold mt-24">{data.title}</h1>
+    <div className="min-h-[calc(100vh-428px)] pt-4">
+      <div className="mb-2">
+        <ExperimentBreadcrumb paperTitle={data.title} />
+      </div>
+      <h1 className="text-2xl font-semibold">{data.title}</h1>
       <div className="flex justify-between align-center my-2">
         <div className="text-muted-foreground">
           <p>
+            {data.published_year && (
+              <span className="font-semibold">
+                {data.published_year}{", "}
+              </span>
+            )}
             {data.journal && (
               <>
                 <span className="font-semibold">
@@ -46,7 +64,16 @@ export default async function PaperPage({ params }: { params: Promise<{paperId: 
                 {" - "}
               </>
             )}
-            {data.doi ? data.doi : data.id}
+
+            {data.doi ? (
+              <a
+                href={`https://doi.org/${data.doi}`}
+                target="_blank" rel="noopener noreferrer"
+                className="hover:underline"
+              >
+                {data.doi}
+              </a>
+            ) : data.id}
           </p>
           <p className="font-semibold">{data.authors_flat}</p>
         </div>
@@ -63,9 +90,17 @@ export default async function PaperPage({ params }: { params: Promise<{paperId: 
         )}
       </div>
 
-      <div className="leading-[16px] text-sm">
+      <div className="text-sm">
         {data.abstract}
       </div>
+
+      <div className="w-full overflow-x-scroll">
+        <ExperimentTable experiments={responseData.experiments_formulations_data} />
+      </div>
+
+      {/*<pre>
+        {JSON.stringify(responseData, null, 2)}
+      </pre>*/}
     </div>
   )
 }

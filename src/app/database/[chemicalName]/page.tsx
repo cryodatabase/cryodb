@@ -297,31 +297,31 @@ const PropertyTable: React.FC<{ transformedData: TransformedProperty[] }> = ({ t
       <table className="min-w-full">
         <thead>
           <tr className="bg-input">
-            <th className="border border-color px-4 py-2 text-left">Property</th>
-            <th className="border border-color px-4 py-2 text-left">Primary Average</th>
-            <th className="border border-color px-4 py-2 text-left">Primary Range</th>
-            <th className="border border-color px-4 py-2 text-left">Outliers</th>
-            <th className="border border-color px-4 py-2 text-left">Secondary Average</th>
-            <th className="border border-color px-4 py-2 text-left">References</th>
+            <th className="border border-color px-4 py-2 text-left text-xs font-medium uppercase tracking-wider">Property</th>
+            <th className="border border-color px-4 py-2 text-left text-xs font-medium uppercase tracking-wider">Primary Average</th>
+            <th className="border border-color px-4 py-2 text-left text-xs font-medium uppercase tracking-wider">Primary Range</th>
+            <th className="border border-color px-4 py-2 text-left text-xs font-medium uppercase tracking-wider">Outliers</th>
+            <th className="border border-color px-4 py-2 text-left text-xs font-medium uppercase tracking-wider">Secondary Average</th>
+            <th className="border border-color px-4 py-2 text-left text-xs font-medium uppercase tracking-wider">References</th>
           </tr>
         </thead>
         <tbody>
           {transformedData.map((item, index) => (
-            <tr key={index} className="hover:bg-input/30">
+            <tr key={index} className={`${index % 2 === 0 ? '' : 'bg-input/30'} divide-x divide-border-color hover:bg-input/45`}>
               <td className="border border-color px-4 py-2 font-semibold">{item.display_name}</td>
               <td className="border border-color px-4 py-2">
                 {item.primary_average || '-'}
                 {/*{item.primary_display_unit || '-'}*/}
-                {item.primary_display_unit ? (
+                {item.primary_display_unit && item.primary_display_unit != null && item.primary_display_unit != 'null' && (
                   <span dangerouslySetInnerHTML={{ __html: item.primary_display_unit }} />
-                ) : ("-")}
+                )}
               </td>
               <td className="border border-color px-4 py-2">
                 {item.primary_range || '—'}
                 {/*{item.primary_display_unit || '-'}*/}
-                {item.primary_display_unit ? (
+                {item.primary_display_unit && item.primary_display_unit != null && item.primary_display_unit != 'null' && (
                   <span dangerouslySetInnerHTML={{ __html: item.primary_display_unit }} />
-                ) : ("")}
+                )}
               </td>
               <td className="border border-color px-4 py-2">
                 {item.outliers.length > 0 ? item.outliers.join(', ') : '-'}
@@ -398,17 +398,19 @@ export default async function ChemicalPage({ params }: { params: Promise<{ chemi
           </div>
 
           <div className="flex mt-3 gap-4 justify-between items-center">
-            <div className="font-semibold capitalize">
-              <h3 className="text-muted-foreground">
-                Also Known As:
-                <br/>
-                {data.properties[0].synonyms.map((synonym, index) => (
-                  <span key={index}>
-                    {synonym}{index + 1 !== data.properties[0].synonyms.length && ", "}
-                  </span>
-                ))}
-              </h3>
-            </div>
+            {data.properties[0].synonyms.length !== 0 &&
+              <div className="font-semibold capitalize">
+                <h3 className="text-muted-foreground">
+                  Also Known As:
+                  <br/>
+                  {data.properties[0].synonyms.map((synonym, index) => (
+                    <span key={index}>
+                      {synonym}{index + 1 !== data.properties[0].synonyms.length && ", "}
+                    </span>
+                  ))}
+                </h3>
+              </div>
+            }
 
             <div className="flex items-center gap-2.5">
               <CitePopup citationsData={citationData} />
