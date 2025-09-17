@@ -1,4 +1,4 @@
-import { Paper } from "@/lib/database/schema";
+import { CryopreservationComponent, Paper } from "@/lib/database/schema";
 import { storage } from "@/lib/database/storage";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -7,7 +7,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     const { id } = await params;
     console.log(id);
     const paper: Paper | undefined = await storage.getPaperById(id);
-    const experiments_formulations_data: Paper[] | undefined = await storage.getPaperExperimentsAndFormulations(id);
+    const experiments_formulations_data: CryopreservationComponent[] | undefined = await storage.getPaperExperimentsAndFormulations(id);
     console.log(paper);
 
     return NextResponse.json({

@@ -1,5 +1,5 @@
 import { headers } from "next/headers";
-import { Paper } from "@/lib/database/schema";
+import { CryopreservationComponent, Paper } from "@/lib/database/schema";
 import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Link } from "lucide-react";
@@ -10,7 +10,7 @@ import { ExperimentBreadcrumb } from "./experimentBreadcrumb";
 
 interface PaperResponse {
   paper: Paper;
-  experiments_formulations_data: any[];
+  experiments_formulations_data: CryopreservationComponent[];
 }
 
 async function fetchPaper(paperId: string, url: string): Promise<PaperResponse | null>  {

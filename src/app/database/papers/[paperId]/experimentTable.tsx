@@ -1,8 +1,6 @@
 // components/ExperimentTable.tsx
 'use client';
 
-import Link from 'next/link';
-
 // Define TypeScript interfaces for the data structure
 interface BiologicalContext {
   organ: string | null;

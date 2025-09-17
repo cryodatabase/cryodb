@@ -3,7 +3,8 @@ import {
   type PaperData,
   type CpaChemical,
   type NamesSynonymsView,
-  type PropertiesView
+  type PropertiesView,
+  CryopreservationComponent
 } from "./schema";
 import { pool } from "./db";
 
@@ -267,7 +268,7 @@ export class DatabaseStorage implements IStorage {
 
   // Get experiments and formulations for a paper using the new view
   //async getPaperExperimentsAndFormulations(paperId: string): Promise<any[]> {
-  async getPaperExperimentsAndFormulations(paperId: string): Promise<any[]> {
+  async getPaperExperimentsAndFormulations(paperId: string): Promise<CryopreservationComponent[]> {
     /* const result = await pool.query(`
       SELECT *
       FROM v_paper_experiments_formulations
