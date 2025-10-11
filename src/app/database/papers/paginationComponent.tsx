@@ -19,12 +19,12 @@ interface PaginationProp {
   hasPreviousPage: boolean;
 }
 
-export default function CPAPaginationComponent({ data, limit }: { data: PaginationProp; limit: number }) {
+export default function PaperPaginationComponent({ data, limit }: { data: PaginationProp; limit: number }) {
   const router = useRouter();
   const currentPage = data.currentPage;
 
   const handlePageChange = (newPage: number) => {
-    router.push(`/database?page=${newPage}&limit=${limit}`);
+    router.push(`/database/papers?page=${newPage}&limit=${limit}`);
   };
 
   // Generate page numbers to display

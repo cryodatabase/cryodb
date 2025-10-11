@@ -14,7 +14,7 @@ const CopyButton: React.FC<CopyButtonProps> = ({ token }) => {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      setTextToCopy(`${window.location.protocol}//${window.location.host}/database/${token}`);
+      setTextToCopy(`${window.location.protocol}//${window.location.host}/database/${encodeURIComponent(token)}`);
     }
   }, [token]);
 

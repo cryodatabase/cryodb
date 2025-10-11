@@ -16,9 +16,9 @@ interface CitationFormats {
 
 interface CitationData {
   name: string;
-  date_written: string;
+  date_written?: Date;
   written_by: string[];
-  hash: string;
+  uri: string;
 }
 
 interface CitePopupProps {
@@ -27,29 +27,36 @@ interface CitePopupProps {
 
 // Function to create citations in different formats
 function createCitation(data: CitationData): CitationFormats {
-  const { name, date_written, written_by, hash } = data;
-  const authors = written_by.length > 0 ? written_by.join(", ") : "Cryorepository Foundation";
+  const { name, date_written, written_by, uri } = data;
+  const authors = written_by.length > 0 ? written_by.join(", ") : "CryoDB Foundation";
 
-  const date = new Date(date_written);
-  const formattedDate = date.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
+  let formattedDate;
+  if (date_written){
+    const date = new Date(date_written);
+    formattedDate = date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  }
+
+  const hasDate = Boolean(formattedDate);
+  const publishedDate = hasDate ? `Published ${formattedDate}` : '';
+  const bracketedPublishDate = hasDate ? `(${formattedDate})` : '';
 
   const currentDate = new Date().toISOString().split("T")[0];
 
   // APA style
-  const apaCitation = `${authors} (${formattedDate}). ${name}. Cryorepository. https://cryorepository.com/database/${hash}`;
+  const apaCitation = `${authors}${hasDate ? ` ${bracketedPublishDate}` : ''}. ${name}. Cryorepository. https://cryorepository.com/database/${uri}`;
 
   // AMA style
-  const amaCitation = `${authors}. ${name}. Cryorepository. Published ${formattedDate}. Accessed ${currentDate}. https://cryorepository.com/database/${hash}`;
+  const amaCitation = `${authors}. ${name}. Cryorepository.${hasDate ? ` ${publishedDate}.` : ''} Accessed ${currentDate}. https://cryorepository.com/database/${uri}`;
 
   // MLA style
-  const mlaCitation = `${authors}. "${name}." Cryorepository, ${formattedDate}, https://cryorepository.com/database/${hash}.`;
+  const mlaCitation = `${authors}. "${name}." Cryorepository${hasDate ? `, ${publishedDate}` : ''}, https://cryorepository.com/database/${uri}.`;
 
-  // Harvard style
-  const harvardCitation = `${authors} (${formattedDate}) '${name}', Cryorepository. Available at: https://cryorepository.com/database/${hash} (Accessed: ${currentDate})`;
+  // Harvard style (example)
+  const harvardCitation = `${authors} (${formattedDate ?? currentDate}) ${name}. Cryorepository. https://cryorepository.com/database/${uri}`;
 
   return {
     apa: apaCitation,

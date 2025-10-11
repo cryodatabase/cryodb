@@ -231,7 +231,7 @@ export function SearchBox() {
           >
             <Filter />
           </Button>*/}
-          <FilterModal chemClassFilters={[]} cellTypeFilters={[]}>
+          <FilterModal /*chemClassFilters={[]} cellTypeFilters={[]}*/>
             <Filter />
           </FilterModal>
 

@@ -13,6 +13,8 @@ interface PaperResponse {
   experiments_formulations_data: CryopreservationComponent[];
 }
 
+export const revalidate = 1800;
+
 async function fetchPaper(paperId: string, url: string): Promise<PaperResponse | null>  {
   try{
     const response = await fetch(`${url}/api/papers/${paperId}`);
@@ -81,7 +83,7 @@ export default async function PaperPage({ params }: { params: Promise<{paperId: 
         {data.paper_url && (
           <Button variant={"outline"} size={"icon"} asChild>
             <a
-              href={data.paper_url}
+              href={/^https?:\/\//i.test(data.paper_url) ? data.paper_url : `https://${data.paper_url}`}
               target="_blank" rel="noopener noreferrer"
             >
               <Link />

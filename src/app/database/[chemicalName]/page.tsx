@@ -374,9 +374,8 @@ export default async function ChemicalPage({ params }: { params: Promise<{ chemi
 
   const citationData = {
     name: data.properties[0].preferred_name,
-    date_written: "N/A",
     written_by: ["CryoDB Foundation"],
-    hash: encodeURIComponent(data.properties[0].preferred_name.toLowerCase())
+    uri: encodeURIComponent(data.properties[0].preferred_name.toLowerCase())
   };
 
   return (

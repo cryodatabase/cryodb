@@ -1,7 +1,7 @@
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import PaginationComponent from "./paginationComponent";
+import CPAPaginationComponent from "./paginationComponent";
 
 interface DatabaseObject {
   id: string;
@@ -28,6 +28,8 @@ interface FetchDatabaseParams {
   limitInt: number;
   url: string;
 }
+
+export const revalidate = 1800;
 
 async function fetchDatabase({ pageInt, limitInt, url }: FetchDatabaseParams): Promise<DatabaseResponse | null> {
   try {
@@ -59,7 +61,9 @@ export default async function DatabasePage({ searchParams }: { searchParams: Pro
     <div className="mx-auto px-4 py-8 max-w-6xl min-h-[calc(100vh-128px)] flex flex-col justify-between">
       <div className="searchResults">
         {data?.data.length > 0 ? (
-          data.data.map((result, index) => (
+          data.data
+          .filter(result => result.preferred_name && result.preferred_name.trim() !== "")
+          .map((result, index) => (
             <Link
               key={index}
               href={`/database/${encodeURIComponent(result.preferred_name.toLowerCase())}`}
@@ -95,7 +99,7 @@ export default async function DatabasePage({ searchParams }: { searchParams: Pro
         )}
       </div>
 
-      <PaginationComponent data={data.pagination} limit={limitInt} />
+      <CPAPaginationComponent data={data.pagination} limit={limitInt} />
 
       <style>{`
       footer{

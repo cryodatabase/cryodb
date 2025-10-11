@@ -1,176 +1,4 @@
-/*"use client"
-
-import React, { useEffect, useState } from "react";
-import { motion } from "framer-motion";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Copy, Check, X, BookOpen } from "lucide-react";
-
-interface CitationFormats {
-  ama: string;
-  apa: string;
-  mla: string;
-  harvard: string;
-}
-
-interface CitationData {
-  name: string;
-  date_written: string;
-  written_by: string[];
-  hash: string;
-}
-
-interface CitePopupProps {
-  citationsData: CitationData;
-}
-
-// Function to create citations in different formats
-function createCitation(data: CitationData): CitationFormats {
-  const { name, date_written, written_by, hash } = data;
-  const authors = written_by.length > 0 ? written_by.join(", ") : "Cryorepository Foundation";
-
-  const date = new Date(date_written);
-  const formattedDate = date.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-
-  const currentDate = new Date().toISOString().split("T")[0];
-
-  // APA style
-  const apaCitation = `${authors} (${formattedDate}). ${name}. Cryorepository. https://cryorepository.com/database/${hash}`;
-
-  // AMA style
-  const amaCitation = `${authors}. ${name}. Cryorepository. Published ${formattedDate}. Accessed ${currentDate}. https://cryorepository.com/database/${hash}`;
-
-  // MLA style
-  const mlaCitation = `${authors}. "${name}." Cryorepository, ${formattedDate}, https://cryorepository.com/database/${hash}.`;
-
-  // Harvard style
-  const harvardCitation = `${authors} (${formattedDate}) '${name}', Cryorepository. Available at: https://cryorepository.com/database/${hash} (Accessed: ${currentDate})`;
-
-  return {
-    apa: apaCitation,
-    ama: amaCitation,
-    mla: mlaCitation,
-    harvard: harvardCitation,
-  };
-}
-
-const CitePopup: React.FC<CitePopupProps> = ({ citationsData }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const [isCopied, setIsCopied] = useState(false);
-  const [format, setFormat] = useState<keyof CitationFormats>("ama");
-
-  // Generate citations using the createCitation function
-  const citations = createCitation(citationsData);
-
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "auto";
-    }
-
-    return () => {
-      document.body.style.overflow = "auto";
-    };
-  }, [isOpen]);
-
-  const copyToClipboard = () => {
-    const currentCitation = citations[format];
-    navigator.clipboard
-      .writeText(currentCitation)
-      .then(() => {
-        setIsCopied(true);
-        setTimeout(() => setIsCopied(false), 2000);
-      })
-      .catch((err) => {
-        console.error("Could not copy text: ", err);
-      });
-  };
-
-  const popupVariants = {
-    hidden: { opacity: 0, scale: 0.8 },
-    visible: { opacity: 1, scale: 1 },
-  };
-
-  return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button
-          variant="outline"
-          className="flex items-center gap-2 h-8 w-8 sm:h-8 sm:w-auto"
-          title="Cite this resource"
-        >
-          <BookOpen className="h-4 w-4" />
-          <span className="hidden sm:block">Cite</span>
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px] p-6">
-        <motion.div
-          initial="hidden"
-          animate="visible"
-          variants={popupVariants}
-          transition={{ duration: 0.1 }}
-        >
-          <DialogHeader>
-            <div className="flex items-center justify-between">
-              <DialogTitle>Cite</DialogTitle>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsOpen(false)}
-                className="hover:bg-gray-100"
-              >
-                <X className="h-5 w-5" />
-              </Button>
-            </div>
-          </DialogHeader>
-          <div className="mt-4">
-            <div className="border border-color rounded-md p-4 min-h-[110px] break-words">
-              <p className="break-all sm:break-keep">{citations[format]}</p>
-            </div>
-            <div className="flex items-center justify-between mt-4 flex-wrap">
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium">Format:</span>
-                <Select value={format} onValueChange={(value) => setFormat(value as keyof CitationFormats)}>
-                  <SelectTrigger className="w-[120px] cursor-pointer">
-                    <SelectValue placeholder="Select format" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem className="cursor-pointer hover:bg-input/50" value="ama">AMA</SelectItem>
-                    <SelectItem className="cursor-pointer hover:bg-input/50" value="apa">APA</SelectItem>
-                    <SelectItem className="cursor-pointer hover:bg-input/50" value="mla">MLA</SelectItem>
-                    <SelectItem className="cursor-pointer hover:bg-input/50" value="harvard">Harvard</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <Button onClick={copyToClipboard} className="flex items-center gap-2" variant="outline">
-                {isCopied ? (
-                  <>
-                    <Check className="h-4 w-4" />
-                    Copied
-                  </>
-                ) : (
-                  <>
-                    <Copy className="h-4 w-4" />
-                    Copy
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
-        </motion.div>
-      </DialogContent>
-    </Dialog>
-  );
-};
-
-export default CitePopup;*/
-
+/*
 "use client";
 
 import React, { useState } from "react";
@@ -398,6 +226,199 @@ export function FilterModal({children, chemClassFilters, cellTypeFilters}: Filte
             <Button onClick={resetFilters} variant="secondary" className="w-[170px]">
               Reset Filters
               <FunnelX />
+            </Button>
+          </div>
+        </motion.div>
+      </DialogContent>
+    </Dialog>
+  );
+}*/
+
+
+
+"use client";
+
+import React, { useState } from "react";
+import { usePathname } from "next/navigation";
+import { motion } from "framer-motion";
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { TriangleAlert, ArrowDownWideNarrow, FunnelX } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+interface FilterModalProps {
+  children: React.ReactNode;
+}
+
+const filterProperties = [
+  { name: "MOLECULAR_MASS", label: "Molecular Mass (g/mol)", type: "range" },
+  { name: "SOLUBILITY", label: "Solubility (mg/L)", type: "range" },
+  { name: "VISCOSITY", label: "Viscosity (mPa·s)", type: "range" },
+  { name: "TG_PRIME", label: "Tg Prime (°C)", type: "range" },
+  { name: "PARTITION_COEFFICIENT", label: "Partition Coefficient (logP)", type: "range" },
+  { name: "DIELECTRIC_CONSTANT", label: "Dielectric Constant", type: "range" },
+  { name: "THERMAL_CONDUCTIVITY", label: "Thermal Conductivity (W/m·K)", type: "range" },
+  { name: "HEAT_CAPACITY", label: "Heat Capacity (J/g·K)", type: "range" },
+  { name: "THERMAL_EXPANSION_COEFFICIENT", label: "Thermal Expansion Coefficient (1/K)", type: "range" },
+  { name: "CRYSTALLIZATION_TEMPERATURE", label: "Crystallization Temperature (°C)", type: "range" },
+  { name: "DIFFUSION_COEFFICIENT", label: "Diffusion Coefficient (m²/s)", type: "range" },
+  { name: "HYDROGEN_BOND_DONORS_ACCEPTORS", label: "Hydrogen Bond Donors/Acceptors", type: "range" },
+  { name: "MELTING_POINT", label: "Melting Point (°C)", type: "range" },
+  { name: "HYDROPHOBICITY", label: "Hydrophobicity", type: "range" },
+  { name: "DENSITY", label: "Density (g/cm³)", type: "range" },
+  { name: "REFRACTIVE_INDEX", label: "Refractive Index", type: "range" },
+  { name: "SURFACE_TENSION", label: "Surface Tension (mN/m)", type: "range" },
+  { name: "PH", label: "pH", type: "range" },
+  { name: "OSMOLALITY_OSMOLARITY", label: "Osmolality/Osmolarity (mOsm/kg)", type: "range" },
+  { name: "POLAR_SURFACE_AREA", label: "Polar Surface Area (Å²)", type: "range" },
+];
+
+export function FilterModal({ children }: FilterModalProps) {
+  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [filters, setFilters] = useState<Record<string, { min?: string; max?: string; value?: string | boolean }>>({});
+  const [filterError, setFilterError] = useState("");
+  const pathname = usePathname();
+
+  const handleFilterChange = (name: string, field: "min" | "max" | "value", value: string | boolean) => {
+    setFilters((prev) => ({
+      ...prev,
+      [name]: {
+        ...prev[name],
+        [field]: value,
+      },
+    }));
+  };
+
+  const validateRange = (min: string, max: string, property: string) => {
+    const minFloat = parseFloat(min);
+    const maxFloat = parseFloat(max);
+    if (min && max && (isNaN(minFloat) || isNaN(maxFloat))) {
+      return `Invalid values for ${property}. Please ensure both are valid numbers.`;
+    }
+    return "";
+  };
+
+  const applyFilters = () => {
+    const params = new URLSearchParams();
+    let hasFilters = false;
+
+    filterProperties.forEach(({ name, type }) => {
+      const filter = filters[name];
+      if (!filter) return;
+
+      if (type === "range" && (filter.min || filter.max)) {
+        const error = validateRange(filter.min || "", filter.max || "", name);
+        if (error) {
+          setFilterError(error);
+          return;
+        }
+        const minFloat = filter.min ? parseFloat(filter.min as string) : undefined;
+        const maxFloat = filter.max ? parseFloat(filter.max as string) : undefined;
+        if (minFloat !== undefined && !isNaN(minFloat)) {
+          params.append(`${name}Min`, minFloat.toString());
+          hasFilters = true;
+        }
+        if (maxFloat !== undefined && !isNaN(maxFloat)) {
+          params.append(`${name}Max`, maxFloat.toString());
+          hasFilters = true;
+        }
+      }
+    });
+
+    if (filterError) return;
+
+    const redirectUrl = hasFilters ? `/filter/${params.toString()}` : "/database";
+    if (hasFilters || pathname !== "/database") {
+      window.location.href = redirectUrl;
+    }
+  };
+
+  const resetFilters = () => {
+    setFilters({});
+    setFilterError("");
+    setIsOpen(false);
+  };
+
+  const popupVariants = {
+    hidden: { opacity: 0, scale: 0.8 },
+    visible: { opacity: 1, scale: 1 },
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        <Button variant="ghost" className="flex items-center gap-2 h-8 w-8 sm:h-8 sm:w-auto" title="Apply filters">
+          {children}
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[600px] p-6 max-h-[80vh] overflow-y-auto">
+        <motion.div
+          className="flex flex-col gap-4"
+          initial="hidden"
+          animate="visible"
+          variants={popupVariants}
+          transition={{ duration: 0.1 }}
+        >
+          <DialogTitle>Apply Search Filters</DialogTitle>
+          {filterError && (
+            <div>
+              <p className="flex gap-1 items-center text-red-500">
+                <TriangleAlert height={18} />
+                {filterError}
+              </p>
+              <div className="border-t border-gray-200 opacity-50 mx-4 mt-3" />
+            </div>
+          )}
+
+          {filterProperties.map(({ name, label, type }) => (
+            <div key={name} className="flex flex-col gap-2">
+              <Label className="font-semibold">{label}</Label>
+              {type === "range" && (
+                <div className="flex gap-2">
+                  <Input
+                    type="number"
+                    placeholder="Min"
+                    value={filters[name]?.min || ""}
+                    onChange={(e) => handleFilterChange(name, "min", e.target.value)}
+                    className="w-full"
+                  />
+                  <Input
+                    type="number"
+                    placeholder="Max"
+                    value={filters[name]?.max || ""}
+                    onChange={(e) => handleFilterChange(name, "max", e.target.value)}
+                    className="w-full"
+                  />
+                </div>
+              )}
+              {type === "boolean" && (
+                <Select
+                  value={filters[name]?.value?.toString() || ""}
+                  onValueChange={(value) => handleFilterChange(name, "value", value === "true")}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="true">Yes</SelectItem>
+                    <SelectItem value="false">No</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+              <div className="border-t border-gray-200 opacity-50 mx-4 mt-2" />
+            </div>
+          ))}
+
+          <div className="flex items-center flex-wrap gap-2 mt-2">
+            <Button onClick={applyFilters} variant="outline" className="w-[170px]">
+              Apply Filters
+              <ArrowDownWideNarrow className="ml-2" />
+            </Button>
+            <Button onClick={resetFilters} variant="secondary" className="w-[170px]">
+              Reset Filters
+              <FunnelX className="ml-2" />
             </Button>
           </div>
         </motion.div>

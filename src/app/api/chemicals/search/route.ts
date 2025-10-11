@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { storage } from '@/lib/database/storage'; // Adjust path to where DatabaseStorage is exported
-import { CpaChemical } from '@/lib/database/schema'; // Adjust path to schema types
+import { storage } from '@/lib/database/storage';
+import { CpaChemical } from '@/lib/database/schema';
 import autoComplete, { AutoCompleteResult } from './autocomplete';
 
 // GET /api/search?query=<search-term>
