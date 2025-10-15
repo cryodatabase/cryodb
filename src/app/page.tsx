@@ -37,7 +37,7 @@ export default function Search() {
           <h1 className="font-semibold text-5xl bg-radial-[at_25%_25%] from-(--foreground) to-[#6638b0] bg-clip-text text-transparent leading-[54px]">Search our Cryoprotectant Database</h1>
           <h3 className="font-semibold text-2xl bg-radial-[at_25%_25%] from-(--foreground) to-[#6638b0] bg-clip-text text-transparent">Reliable articles and text written by our team.</h3>
       </div>*/}
-      <div className="flex items-center gap-1.5 mb-6">
+      <div className="flex items-center justify-center md:justify-start gap-1.5 mb-6">
         <Image src="/assets/logo.png" width={36} height={36} className="select-none h-12 w-12 pointer-events-none [html.light_&]:brightness-0" alt="Logo Image" />
         <h2 className="max-[400px]:hidden font-semibold text-3xl">
           CryoRepository
@@ -46,8 +46,8 @@ export default function Search() {
 
       <SearchBox />
 
-      <div>
-        <p className="text-sm max-w-[490px] my-3 text-gray-600 dark:text-gray-300 leading-relaxed">
+      <div className="flex flex-col items-center md:block">
+        <p className="text-sm max-w-[490px]  my-3 text-gray-600 dark:text-gray-300 leading-relaxed">
           <strong>CryoRepository</strong> is a resource focused on cryoprotective compounds.  
           It offers curated data on their chemical properties, biological effects, and performance across species and sample types.  
           <br /><br />

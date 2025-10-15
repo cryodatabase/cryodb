@@ -268,3 +268,11 @@ export interface CryopreservationComponent {
   alias_id: string;
   alias_label: string;
 }
+
+export type PropertyFilter = {
+  prop_type: string;
+  unit?: string;
+  min_value?: number;
+  max_value?: number;
+  raw_value?: string;
+};

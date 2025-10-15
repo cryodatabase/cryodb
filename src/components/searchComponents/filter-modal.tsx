@@ -236,6 +236,43 @@ export function FilterModal({children, chemClassFilters, cellTypeFilters}: Filte
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+
 "use client";
 
 import React, { useState } from "react";
@@ -420,6 +457,405 @@ export function FilterModal({ children }: FilterModalProps) {
               Reset Filters
               <FunnelX className="ml-2" />
             </Button>
+          </div>
+        </motion.div>
+      </DialogContent>
+    </Dialog>
+  );
+}*/
+
+
+
+
+
+
+
+
+
+
+
+"use client";
+
+import React, { useState } from "react";
+import { usePathname } from "next/navigation";
+import { motion } from "framer-motion";
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { TriangleAlert, ArrowDownWideNarrow, FunnelX, X, ChevronDown, ChevronUp } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+
+// Property definitions from existing code
+const PROPERTY_DEFINITIONS = {
+  MOLECULAR_MASS: { label: "Molecular Mass", defaultUnit: "g/mol", units: ["g/mol", "Da", "kDa"], type: "numeric" },
+  SOLUBILITY: { label: "Solubility", defaultUnit: "mg/mL", units: ["mg/mL", "g/100 mL", "% w/v"], type: "numeric" },
+  VISCOSITY: { label: "Viscosity", defaultUnit: "mPa.s", units: ["mPa.s", "cP"], type: "numeric" },
+  TG_PRIME: { label: "Tg'", defaultUnit: "degC", units: ["degC", "degK"], type: "numeric" },
+  PARTITION_COEFFICIENT: { label: "Partition Coefficient", defaultUnit: "logP", units: ["logP"], type: "numeric" },
+  DIELECTRIC_CONSTANT: { label: "Dielectric Constant", defaultUnit: "", units: [], type: "numeric" },
+  THERMAL_CONDUCTIVITY: { label: "Thermal Conductivity", defaultUnit: "W/(m.K)", units: ["W/(m.K)"], type: "numeric" },
+  HEAT_CAPACITY: { label: "Heat Capacity", defaultUnit: "J/(mol.K)", units: ["J/(mol.K)", "cal/(mol.K)"], type: "numeric" },
+  THERMAL_EXPANSION_COEFFICIENT: { label: "Thermal Expansion Coefficient", defaultUnit: "1/K", units: ["1/K"], type: "numeric" },
+  CRYSTALLIZATION_TEMPERATURE: { label: "Crystallization Temperature", defaultUnit: "degC", units: ["degC", "degK"], type: "numeric" },
+  DIFFUSION_COEFFICIENT: { label: "Diffusion Coefficient", defaultUnit: "m2/s", units: ["m2/s", "cm2/s"], type: "numeric" },
+  HYDROGEN_BOND_DONORS_ACCEPTORS: { label: "Hydrogen Bond Donors/Acceptors", defaultUnit: "count", units: ["count"], type: "numeric" },
+  SOURCE_OF_COMPOUND: { label: "Source of Compound", defaultUnit: "text", units: ["text"], type: "text" },
+  GRAS_CERTIFICATION: { label: "GRAS Certification", defaultUnit: "boolean", units: ["boolean"], type: "boolean" },
+  MELTING_POINT: { label: "Melting Point", defaultUnit: "degC", units: ["degC", "degK"], type: "numeric" },
+  HYDROPHOBICITY: { label: "Hydrophobicity", defaultUnit: "qualitative", units: ["qualitative"], type: "text" },
+  DENSITY: { label: "Density", defaultUnit: "g/cm3", units: ["g/cm3", "kg/m3"], type: "numeric" },
+  REFRACTIVE_INDEX: { label: "Refractive Index", defaultUnit: "", units: [], type: "numeric" },
+  SURFACE_TENSION: { label: "Surface Tension", defaultUnit: "mN/m", units: ["mN/m", "dyn/cm"], type: "numeric" },
+  PH: { label: "pH", defaultUnit: "", units: [], type: "numeric" },
+  OSMOLALITY_OSMOLARITY: { label: "Osmolality/Osmolarity", defaultUnit: "Osmol/kg", units: ["Osmol/kg", "Osmol/L"], type: "numeric" },
+  POLAR_SURFACE_AREA: { label: "Polar Surface Area", defaultUnit: "A2", units: ["A2"], type: "numeric" },
+} as const;
+
+type PropertyType = keyof typeof PROPERTY_DEFINITIONS;
+
+interface FilterState {
+  id: string;
+  prop_type: PropertyType;
+  unit: string;
+  min_value?: string;
+  max_value?: string;
+  raw_value?: string;
+}
+
+interface FilterModalProps {
+  children: React.ReactNode;
+}
+
+export function FilterModal({ children }: FilterModalProps) {
+  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [filters, setFilters] = useState<FilterState[]>([]);
+  const [showAddFilter, setShowAddFilter] = useState(false);
+  const [expandedFilter, setExpandedFilter] = useState<string | null>(null);
+  const [filterError, setFilterError] = useState("");
+  const pathname = usePathname();
+
+  const addFilter = () => {
+    const newFilter: FilterState = {
+      id: Math.random().toString(36).substr(2, 9),
+      prop_type: "MOLECULAR_MASS",
+      unit: PROPERTY_DEFINITIONS.MOLECULAR_MASS.defaultUnit,
+      min_value: "",
+      max_value: "",
+      raw_value: "",
+    };
+    setFilters([...filters, newFilter]);
+    setExpandedFilter(newFilter.id);
+    setShowAddFilter(false);
+  };
+
+  const removeFilter = (id: string) => {
+    setFilters(filters.filter((f) => f.id !== id));
+    if (expandedFilter === id) setExpandedFilter(null);
+  };
+
+  const updateFilter = (id: string, updates: Partial<FilterState>) => {
+    setFilters(filters.map((f) => (f.id === id ? { ...f, ...updates } : f)));
+  };
+
+  const handlePropertyTypeChange = (id: string, propType: PropertyType) => {
+    const propDef = PROPERTY_DEFINITIONS[propType];
+    updateFilter(id, {
+      prop_type: propType,
+      unit: propDef.defaultUnit,
+      min_value: "",
+      max_value: "",
+      raw_value: "",
+    });
+  };
+
+  const validateRange = (min: string, max: string, property: string) => {
+    const minFloat = parseFloat(min);
+    const maxFloat = parseFloat(max);
+    if (min && max && (isNaN(minFloat) || isNaN(maxFloat))) {
+      return `Invalid values for ${property}. Please ensure both are valid numbers.`;
+    }
+    return "";
+  };
+
+  const applyFilters = () => {
+    const params = new URLSearchParams();
+    let hasFilters = false;
+
+    const validFilters = filters
+      .filter((f) => {
+        const propDef = PROPERTY_DEFINITIONS[f.prop_type];
+        if (propDef.type === "numeric") {
+          const error = validateRange(f.min_value || "", f.max_value || "", propDef.label);
+          if (error) {
+            setFilterError(error);
+            return false;
+          }
+          return f.min_value || f.max_value;
+        } else if (propDef.type === "boolean" || propDef.type === "text") {
+          return f.raw_value;
+        }
+        return false;
+      })
+      .map((f) => ({
+        prop_type: f.prop_type,
+        unit: f.unit || undefined,
+        min_value: f.min_value ? parseFloat(f.min_value) : undefined,
+        max_value: f.max_value ? parseFloat(f.max_value) : undefined,
+        raw_value: f.raw_value || undefined,
+      }));
+
+    validFilters.forEach((filter) => {
+      if (filter.min_value !== undefined && !isNaN(filter.min_value)) {
+        params.append(`${filter.prop_type}Min`, filter.min_value.toString());
+        hasFilters = true;
+      }
+      if (filter.max_value !== undefined && !isNaN(filter.max_value)) {
+        params.append(`${filter.prop_type}Max`, filter.max_value.toString());
+        hasFilters = true;
+      }
+      if (filter.raw_value !== undefined) {
+        params.append(filter.prop_type, filter.raw_value);
+        hasFilters = true;
+      }
+    });
+
+    if (filterError) return;
+
+    const redirectUrl = hasFilters ? `/database/filter/${params.toString()}` : "/database";
+    if (hasFilters || pathname !== "/database") {
+      window.location.href = redirectUrl;
+    }
+    setIsOpen(false);
+  };
+
+  const resetFilters = () => {
+    setFilters([]);
+    setExpandedFilter(null);
+    setFilterError("");
+    setShowAddFilter(false);
+    setIsOpen(false);
+  };
+
+  const popupVariants = {
+    hidden: { opacity: 0, scale: 0.8 },
+    visible: { opacity: 1, scale: 1 },
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        <Button variant="ghost" className="flex items-center gap-2 h-8 w-8 sm:h-8 sm:w-auto" title="Apply filters">
+          {children}
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[600px] p-6 max-h-[80vh] overflow-y-auto">
+        <motion.div
+          className="flex flex-col gap-4"
+          initial="hidden"
+          animate="visible"
+          variants={popupVariants}
+          transition={{ duration: 0.1 }}
+        >
+          <DialogTitle>Apply Search Filters</DialogTitle>
+          {filterError && (
+            <div>
+              <p className="flex gap-1 items-center text-red-500">
+                <TriangleAlert height={18} />
+                {filterError}
+              </p>
+              <div className="border-t border-gray-200 opacity-50 mx-4 mt-3" />
+            </div>
+          )}
+
+          <div className="space-y-4">
+            {filters.map((filter) => {
+              const propDef = PROPERTY_DEFINITIONS[filter.prop_type];
+              const isExpanded = expandedFilter === filter.id;
+
+              return (
+                <Card key={filter.id} className="p-4 border-2">
+                  <CardHeader className="px-0">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2 flex-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setExpandedFilter(isExpanded ? null : filter.id)}
+                          data-testid={`button-toggle-filter-${filter.id}`}
+                        >
+                          {isExpanded ? <ChevronUp className="w-6 h-6" /> : <ChevronDown className="w-6 h-6" />}
+                        </Button>
+                        <span className="font-medium">{propDef.label}</span>
+                        {filter.unit && <Badge variant="outline">{filter.unit}</Badge>}
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeFilter(filter.id)}
+                        data-testid={`button-remove-filter-${filter.id}`}
+                      >
+                        <X className="w-6 h-6" />
+                      </Button>
+                    </div>
+                  </CardHeader>
+
+                  {isExpanded && (
+                    <CardContent className="pt-0 px-0">
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="flex flex-col gap-1">
+                            <Label>Property Type</Label>
+                            <Select
+                              value={filter.prop_type}
+                              onValueChange={(value) => handlePropertyTypeChange(filter.id, value as PropertyType)}
+                            >
+                              <SelectTrigger data-testid={`select-property-${filter.id}`}>
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {Object.entries(PROPERTY_DEFINITIONS).map(([key, def]) => (
+                                  <SelectItem key={key} value={key}>
+                                    {def.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+
+                          {propDef.units.length > 0 && propDef.type !== "boolean" && (
+                            <div className="flex flex-col gap-1">
+                              <Label>Unit</Label>
+                              <Select
+                                value={filter.unit}
+                                onValueChange={(value) => updateFilter(filter.id, { unit: value })}
+                              >
+                                <SelectTrigger data-testid={`select-unit-${filter.id}`}>
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {propDef.units.map((unit) => (
+                                    <SelectItem key={unit} value={unit}>
+                                      {unit}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          )}
+                        </div>
+
+                        {propDef.type === "numeric" && (
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="flex flex-col gap-1">
+                              <Label>Min Value</Label>
+                              <Input
+                                type="number"
+                                step="any"
+                                placeholder="Min"
+                                value={filter.min_value || ""}
+                                onChange={(e) => updateFilter(filter.id, { min_value: e.target.value })}
+                                data-testid={`input-min-${filter.id}`}
+                              />
+                            </div>
+                            <div className="flex flex-col gap-1">
+                              <Label>Max Value</Label>
+                              <Input
+                                type="number"
+                                step="any"
+                                placeholder="Max"
+                                value={filter.max_value || ""}
+                                onChange={(e) => updateFilter(filter.id, { max_value: e.target.value })}
+                                data-testid={`input-max-${filter.id}`}
+                              />
+                            </div>
+                          </div>
+                        )}
+
+                        {/*propDef.type === "text" ||  // hide text prop type, only for source of compound at the moment */ }
+                        {(propDef.type === "boolean") && (
+                          <div className="flex flex-col gap-1">
+                            <Label>Value</Label>
+                            {propDef.type === "boolean" && (
+                              <Select
+                                value={filter.raw_value || ""}
+                                onValueChange={(value) => updateFilter(filter.id, { raw_value: value })}
+                              >
+                                <SelectTrigger data-testid={`select-value-${filter.id}`}>
+                                  <SelectValue placeholder="Select" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="true">Yes</SelectItem>
+                                  <SelectItem value="false">No</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            )/* : (
+                              <Input
+                                type="text"
+                                placeholder="Enter value"
+                                value={filter.raw_value || ""}
+                                onChange={(e) => updateFilter(filter.id, { raw_value: e.target.value })}
+                                data-testid={`input-value-${filter.id}`}
+                              />
+                            )}*/}
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  )}
+                </Card>
+              );
+            })}
+
+            {showAddFilter && (
+              <Card className="border-2 border-dashed">
+                <CardContent className="py-6">
+                  <div className="text-center">
+                    <p className="text-muted-foreground mb-4">Click to add a new property filter</p>
+                    <div className="flex gap-2 justify-center">
+                      <Button onClick={addFilter} data-testid="button-confirm-add-filter">
+                        Add Filter
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={() => setShowAddFilter(false)}
+                        data-testid="button-cancel-add-filter"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            <Button
+              onClick={() => setShowAddFilter(true)}
+              variant="outline"
+              className="w-[170px]"
+              disabled={showAddFilter}
+              data-testid="button-add-filter"
+            >
+              Add Filter
+            </Button>
+
+            <div className="flex items-center flex-wrap gap-2 mt-2">
+              <Button
+                onClick={resetFilters}
+                variant="destructive"
+                className="w-[170px]"
+                data-testid="button-reset-filters"
+              >
+                Reset Filters
+                <FunnelX className="ml-2" />
+              </Button>
+              <Button onClick={applyFilters} variant="default" className="w-[170px]" data-testid="button-apply-filters">
+                Apply Filters
+                <ArrowDownWideNarrow className="ml-2" />
+              </Button>
+            </div>
           </div>
         </motion.div>
       </DialogContent>
