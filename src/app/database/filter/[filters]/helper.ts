@@ -32,7 +32,7 @@ const PROPERTY_DEFINITIONS = {
   POLAR_SURFACE_AREA: { label: "Polar Surface Area", defaultUnit: "A2", units: ["A2"], type: "numeric" },
 } as const;
 
-type PropertyType = keyof typeof PROPERTY_DEFINITIONS;
+export type PropertyType = keyof typeof PROPERTY_DEFINITIONS;
 
 /**
  * Decodes a URI query string into an array of PropertyFilter objects for the /api/chemicals/filter endpoint.
@@ -107,3 +107,24 @@ export function decodeFiltersFromURI(uri: string): PropertyFilter[] {
 
   return filters;
 }
+
+
+export function getFilterLabel(prop_type: PropertyType): string {
+  const filter = PROPERTY_DEFINITIONS[prop_type];
+  return filter.label;
+}
+
+export function getFilterRange(
+  {
+    min_value,
+    max_value,
+    raw_value
+  }: { min_value?: number; max_value?: number; raw_value?: string; }) {
+    if (raw_value) return raw_value;
+
+    if(min_value && max_value) {
+      return `${min_value} - ${max_value}`;
+    } else {
+      return min_value ? min_value : max_value;
+    }
+};

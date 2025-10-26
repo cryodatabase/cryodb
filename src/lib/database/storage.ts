@@ -263,14 +263,102 @@ export class DatabaseStorage implements IStorage {
     return result.rows as NamesSynonymsView[];
   }
 
-  async getChemicalProperties(id: string): Promise<PropertiesView[]> {
+  /*async getChemicalProperties(id: string): Promise<PropertiesView[]> {
     const result = await pool.query(`SELECT * FROM v_cpa_properties WHERE chemical_id = $1`, [id]);
     return result.rows as PropertiesView[];
+  }*/
+
+  async getChemicalProperties(id: string): Promise<PropertiesView[]> {
+    // Query property values with their sources, then aggregate in JavaScript
+    const result = await pool.query(`
+      SELECT
+        c.id::text as chemical_id,
+        c.preferred_name,
+        c.role,
+        prop.prop_type,
+        cpv.id as value_id,
+        cpv.unit,
+        cpv.value_kind,
+        CASE 
+          WHEN cpv.value_kind = 'POINT' THEN cpv.numeric_value::text
+          WHEN cpv.value_kind = 'RANGE' THEN cpv.range_min::text || ' - ' || cpv.range_max::text
+          ELSE cpv.raw_value
+        END as value,
+        ref.paper_id,
+        ref.quote,
+        ref.link,
+        p.doi
+      FROM cpa_chemicals c
+      JOIN chemical_properties prop ON prop.chemical_id = c.id
+      JOIN chemical_property_values cpv ON cpv.property_id = prop.id
+      LEFT JOIN cpa_references ref ON ref.property_value_id = cpv.id
+      LEFT JOIN papers p ON CAST(p.id AS TEXT) = CAST(ref.paper_id AS TEXT)
+      WHERE c.id = $1::uuid
+      ORDER BY prop.prop_type, cpv.value_kind, value
+    `, [id]);
+
+    // Group by prop_type and aggregate property_values
+    const propertiesMap = new Map<string, PropertiesView>();
+    
+    result.rows.forEach((row) => {
+      const key = row.prop_type;
+      
+      if (!propertiesMap.has(key)) {
+        propertiesMap.set(key, {
+          chemical_id: row.chemical_id,
+          preferred_name: row.preferred_name,
+          role: row.role,
+          prop_type: row.prop_type,
+          property_values: []
+        });
+      }
+      
+      const property = propertiesMap.get(key)!;
+      
+      // Find or create property value entry
+      let propertyValue = property.property_values.find(
+        pv => pv.value === row.value && pv.unit === row.unit
+      );
+      
+      if (!propertyValue) {
+        propertyValue = {
+          value: row.value,
+          unit: row.unit,
+          sources: []
+        };
+        property.property_values.push(propertyValue);
+      }
+      
+      // Add source with proper deduplication
+      // Deduplicate by quote when present (same quote = same source, regardless of paper_id)
+      // For sources without quotes, deduplicate by (paper_id + link) to preserve distinct references
+      const isDuplicate = row.quote 
+        ? propertyValue.sources.some(s => s.quote === row.quote)
+        : row.paper_id && propertyValue.sources.some(s => 
+            s.paper_id === row.paper_id && 
+            s.link === row.link && 
+            !s.quote
+          );
+      
+      if (!isDuplicate && (row.quote || row.paper_id || row.link)) {
+        propertyValue.sources.push({
+          paper_id: row.paper_id,
+          doi: row.doi,
+          link: row.link,
+          quote: row.quote,
+          experiment_quote: null
+        });
+      }
+    });
+
+    return Array.from(propertiesMap.values());
   }
 
   async getChemicalPropertiesFromName(name: string): Promise<PropertiesView[]> {
     //const result = await pool.query(`SELECT * FROM v_cpa_properties WHERE preferred_name = $1`, [name]);
-    const result = await pool.query(`SELECT DISTINCT
+    const result = await pool.query(`SELECT * FROM v_cpa_property_values WHERE preferred_name = $1`, [name]);
+    console.log(result.rows);
+    /*const result = await pool.query(`SELECT DISTINCT
         c.inchikey,
         c.preferred_name,
         c.role,
@@ -286,7 +374,7 @@ export class DatabaseStorage implements IStorage {
     )
     AND vp.preferred_name = $1
     ORDER BY c.preferred_name;
-    `, [name]);
+    `, [name]);*/
     return result.rows as PropertiesView[];
   }
 
@@ -436,3 +524,422 @@ export class DatabaseStorage implements IStorage {
 }
 
 export const storage = new DatabaseStorage();
+
+
+// REVIEW CHANGES
+
+/*
+import { 
+  papers, 
+  chemicalAgents, 
+  agentProperties, 
+  cpaChemicals,
+  type Paper, 
+  type InsertPaper, 
+  type PaperData,
+  type CpaChemical,
+  type NamesSynonymsView,
+  type PropertiesView,
+  type FilterablePropertyView,
+  type PropertyFilter
+} from "./schema";
+import { pool } from "./db";
+import { eq, ilike, sql } from "drizzle-orm";
+import { convertToBaseUnit, getBaseUnit, CONVERSION_FACTORS, type PropertyType } from './unitConversion';
+
+/**
+ * Generate SQL expression to convert a database value to its base unit
+ * This creates a CASE statement that handles all possible units for a property
+ * /
+function buildUnitConversionSQL(propertyType: PropertyType, valueColumn: string): string {
+  const conversions = CONVERSION_FACTORS[propertyType as PropertyType];
+  const baseUnit = getBaseUnit(propertyType as PropertyType);
+  
+  if (!conversions) {
+    // No conversions defined, return value as-is
+    return valueColumn;
+  }
+
+  const cases: string[] = [];
+  
+  // Build CASE statement for each unit
+  Object.entries(conversions).forEach(([unit, factor]) => {
+    // Handle temperature conversions with offsets
+    if (['TG_PRIME', 'MELTING_POINT', 'BOILING_POINT', 'CRITICAL_TEMP', 'CRYSTALLIZATION_TEMPERATURE'].includes(propertyType)) {
+      if (unit === 'degK') {
+        cases.push(`WHEN cpv.unit = '${unit}' THEN ${valueColumn} - 273.15`);
+      } else if (unit === 'degF') {
+        cases.push(`WHEN cpv.unit = '${unit}' THEN (${valueColumn} - 32) * 5.0/9.0`);
+      } else {
+        cases.push(`WHEN cpv.unit = '${unit}' THEN ${valueColumn} * ${factor}`);
+      }
+    } else {
+      cases.push(`WHEN cpv.unit = '${unit}' THEN ${valueColumn} * ${factor}`);
+    }
+  });
+
+  // Default case: return value unchanged if unit not recognized
+  cases.push(`ELSE ${valueColumn}`);
+
+  return `(CASE ${cases.join(' ')} END)`;
+}
+
+export interface IStorage {
+  getPaper(id: string): Promise<Paper | undefined>;
+  getPaperByPaperId(paperId: string): Promise<Paper | undefined>;
+  getAllPapers(): Promise<Paper[]>;
+  searchPapers(query: string): Promise<Paper[]>;
+  
+  // ChemSpider-style chemical methods
+  getChemical(id: string): Promise<CpaChemical | undefined>;
+  getAllChemicals(): Promise<CpaChemical[]>;
+  searchChemicals(query: string, role?: string): Promise<CpaChemical[]>;
+  semanticSearchChemicals(embedding: number[]): Promise<CpaChemical[]>;
+  getChemicalNames(id: string): Promise<NamesSynonymsView[]>;
+  getChemicalProperties(id: string): Promise<PropertiesView[]>;
+  
+  // Chemical filtering by properties
+  filterChemicalsByProperties(filters: PropertyFilter[]): Promise<CpaChemical[]>;
+}
+
+export class DatabaseStorage implements IStorage {
+  async getPaper(id: string): Promise<Paper | undefined> {
+    const result = await pool.query(`SELECT * FROM papers WHERE id = $1`, [id]);
+    if (result.rows.length === 0) return undefined;
+    const row = result.rows[0];
+    return {
+      ...row,
+      data: row.cpa_facts_json
+    } as Paper;
+  }
+
+  async getPaperByPaperId(paperId: string): Promise<Paper | undefined> {
+    const result = await pool.query(`SELECT * FROM papers WHERE paper_id = $1`, [paperId]);
+    return result.rows[0] as Paper || undefined;
+  }
+
+  async getAllPapers(): Promise<Paper[]> {
+    const result = await pool.query(`SELECT * FROM papers ORDER BY id DESC`);
+    return result.rows.map(row => ({
+      ...row,
+      data: row.cpa_facts_json
+    })) as Paper[];
+  }
+
+  async searchPapers(query: string): Promise<Paper[]> {
+    if (!query.trim()) {
+      return await this.getAllPapers();
+    }
+    
+    const result = await pool.query(
+      `SELECT * FROM papers WHERE title ILIKE $1 ORDER BY id DESC`,
+      [`%${query}%`]
+    );
+    return result.rows.map(row => ({
+      ...row,
+      data: row.cpa_facts_json
+    })) as Paper[];
+  }
+
+  // ChemSpider-style chemical methods
+  async getChemical(id: string): Promise<CpaChemical | undefined> {
+    const result = await pool.query(`SELECT * FROM cpa_chemicals WHERE id = $1`, [id]);
+    return result.rows[0] as CpaChemical || undefined;
+  }
+
+  async getAllChemicals(): Promise<CpaChemical[]> {
+    const result = await pool.query(`
+      SELECT DISTINCT c.id, c.inchikey, c.preferred_name, c.role, c.synonyms
+      FROM cpa_chemicals c 
+      WHERE EXISTS (
+        SELECT 1 FROM v_cpa_property_values vpv 
+        WHERE vpv.chemical_id = c.id
+      )
+      ORDER BY c.preferred_name
+    `);
+    return result.rows as CpaChemical[];
+  }
+
+  async searchChemicals(query: string, role?: string): Promise<CpaChemical[]> {
+    if (!query.trim() && !role) {
+      return await this.getAllChemicals();
+    }
+    
+    let whereConditions = [];
+    let params = [];
+    let paramIndex = 1;
+    
+    // Text search in preferred_name and synonyms
+    if (query.trim()) {
+      whereConditions.push(`(c.preferred_name ILIKE $${paramIndex} 
+          OR EXISTS (
+            SELECT 1 FROM jsonb_array_elements_text(c.synonyms) AS synonym
+            WHERE synonym ILIKE $${paramIndex}
+          ))`);
+      params.push(`%${query}%`);
+      paramIndex++;
+    }
+    
+    // Role filter
+    if (role) {
+      whereConditions.push(`c.role = $${paramIndex}`);
+      params.push(role);
+      paramIndex++;
+    }
+    
+    // Add filter for chemicals that have properties
+    whereConditions.push(`EXISTS (
+      SELECT 1 FROM v_cpa_property_values vpv 
+      WHERE vpv.chemical_id = c.id
+    )`);
+    
+    const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
+    
+    const result = await pool.query(
+      `SELECT c.id, c.inchikey, c.preferred_name, c.role, c.synonyms
+       FROM cpa_chemicals c 
+       ${whereClause}
+       GROUP BY c.id, c.inchikey, c.preferred_name, c.role, c.synonyms
+       ORDER BY c.preferred_name`,
+      params
+    );
+    return result.rows as CpaChemical[];
+  }
+
+  async getChemicalNames(id: string): Promise<NamesSynonymsView[]> {
+    const result = await pool.query(`SELECT * FROM v_cpa_names_synonyms WHERE chemical_id = $1`, [id]);
+    return result.rows as NamesSynonymsView[];
+  }
+
+  async getChemicalProperties(id: string): Promise<PropertiesView[]> {
+    // Query property values with their sources, then aggregate in JavaScript
+    const result = await pool.query(`
+      SELECT
+        c.id::text as chemical_id,
+        c.preferred_name,
+        c.role,
+        prop.prop_type,
+        cpv.id as value_id,
+        cpv.unit,
+        cpv.value_kind,
+        CASE 
+          WHEN cpv.value_kind = 'POINT' THEN cpv.numeric_value::text
+          WHEN cpv.value_kind = 'RANGE' THEN cpv.range_min::text || ' - ' || cpv.range_max::text
+          ELSE cpv.raw_value
+        END as value,
+        ref.paper_id,
+        ref.quote,
+        ref.link,
+        p.doi
+      FROM cpa_chemicals c
+      JOIN chemical_properties prop ON prop.chemical_id = c.id
+      JOIN chemical_property_values cpv ON cpv.property_id = prop.id
+      LEFT JOIN cpa_references ref ON ref.property_value_id = cpv.id
+      LEFT JOIN papers p ON CAST(p.id AS TEXT) = CAST(ref.paper_id AS TEXT)
+      WHERE c.id = $1::uuid
+      ORDER BY prop.prop_type, cpv.value_kind, value
+    `, [id]);
+
+    // Group by prop_type and aggregate property_values
+    const propertiesMap = new Map<string, PropertiesView>();
+    
+    result.rows.forEach((row: any) => {
+      const key = row.prop_type;
+      
+      if (!propertiesMap.has(key)) {
+        propertiesMap.set(key, {
+          chemical_id: row.chemical_id,
+          preferred_name: row.preferred_name,
+          role: row.role,
+          prop_type: row.prop_type,
+          property_values: []
+        });
+      }
+      
+      const property = propertiesMap.get(key)!;
+      
+      // Find or create property value entry
+      let propertyValue = property.property_values.find(
+        pv => pv.value === row.value && pv.unit === row.unit
+      );
+      
+      if (!propertyValue) {
+        propertyValue = {
+          value: row.value,
+          unit: row.unit,
+          sources: []
+        };
+        property.property_values.push(propertyValue);
+      }
+      
+      // Add source with proper deduplication
+      // Deduplicate by quote when present (same quote = same source, regardless of paper_id)
+      // For sources without quotes, deduplicate by (paper_id + link) to preserve distinct references
+      const isDuplicate = row.quote 
+        ? propertyValue.sources.some(s => s.quote === row.quote)
+        : row.paper_id && propertyValue.sources.some(s => 
+            s.paper_id === row.paper_id && 
+            s.link === row.link && 
+            !s.quote
+          );
+      
+      if (!isDuplicate && (row.quote || row.paper_id || row.link)) {
+        propertyValue.sources.push({
+          paper_id: row.paper_id,
+          doi: row.doi,
+          link: row.link,
+          quote: row.quote,
+          experiment_quote: null
+        });
+      }
+    });
+
+    return Array.from(propertiesMap.values());
+  }
+
+  async semanticSearchChemicals(embedding: number[]): Promise<CpaChemical[]> {
+    const vectorStr = `[${embedding.join(',')}]`;
+    
+    // Use the v_cpa_alias_embeddings view with filter for chemicals that have properties
+    const result = await pool.query(`
+      SELECT DISTINCT 
+        vae.chemical_id as id,
+        vae.inchikey,
+        vae.preferred_name,
+        vae.role
+      FROM v_cpa_alias_embeddings vae
+      WHERE EXISTS (
+        SELECT 1 FROM v_cpa_property_values vpv 
+        WHERE vpv.chemical_id = vae.chemical_id
+      )
+      ORDER BY vae.embedding <-> $1::vector
+      LIMIT 20
+    `, [vectorStr]);
+    
+    return result.rows as CpaChemical[];
+  }
+
+  async filterChemicalsByProperties(filters: PropertyFilter[]): Promise<CpaChemical[]> {
+    if (!filters || filters.length === 0) {
+      return this.getAllChemicals();
+    }
+
+    // Build the SQL query dynamically based on filters
+    const filterConditions: string[] = [];
+    const params: any[] = [];
+    let paramIndex = 1;
+
+    filters.forEach((filter) => {
+      const conditions: string[] = [];
+      const propertyType = filter.prop_type as PropertyType;
+      
+      // Property type condition
+      conditions.push(`prop.prop_type = $${paramIndex}`);
+      params.push(filter.prop_type);
+      paramIndex++;
+
+      // Numeric range filtering with unit conversion
+      if (filter.min_value !== undefined || filter.max_value !== undefined) {
+        // Convert user's input values to base unit
+        const baseUnit = getBaseUnit(propertyType);
+        const userUnit = filter.unit || baseUnit;
+        
+        // Generate SQL expression to convert database values to base unit
+        const convertedPointValue = buildUnitConversionSQL(
+          propertyType,
+          'cpv.numeric_value'
+        );
+        const convertedRangeMin = buildUnitConversionSQL(
+          propertyType,
+          'cpv.range_min'
+        );
+        const convertedRangeMax = buildUnitConversionSQL(
+          propertyType,
+          'cpv.range_max'
+        );
+
+        if (filter.min_value !== undefined) {
+          // Convert user's min value to base unit
+          const normalizedMinValue = convertToBaseUnit(
+            filter.min_value,
+            userUnit,
+            propertyType
+          );
+          
+          // value_max >= min_value (checking if max of range is above our minimum)
+          conditions.push(`
+            (CASE cpv.value_kind
+              WHEN 'POINT' THEN ${convertedPointValue}
+              WHEN 'RANGE' THEN ${convertedRangeMax}
+              ELSE NULL
+            END) >= $${paramIndex}
+          `);
+          params.push(normalizedMinValue);
+          paramIndex++;
+        }
+        
+        if (filter.max_value !== undefined) {
+          // Convert user's max value to base unit
+          const normalizedMaxValue = convertToBaseUnit(
+            filter.max_value,
+            userUnit,
+            propertyType
+          );
+          
+          // value_min <= max_value (checking if min of range is below our maximum)
+          conditions.push(`
+            (CASE cpv.value_kind
+              WHEN 'POINT' THEN ${convertedPointValue}
+              WHEN 'RANGE' THEN ${convertedRangeMin}
+              ELSE NULL
+            END) <= $${paramIndex}
+          `);
+          params.push(normalizedMaxValue);
+          paramIndex++;
+        }
+      }
+
+      // Raw value filtering (for text properties)
+      if (filter.raw_value) {
+        conditions.push(`cpv.raw_value ILIKE $${paramIndex}`);
+        params.push(`%${filter.raw_value}%`);
+        paramIndex++;
+      }
+
+      filterConditions.push(`(${conditions.join(' AND ')})`);
+    });
+
+    const whereClause = filterConditions.join(' OR ');
+
+    // Use direct JOINs instead of view to avoid permission issues
+    const result = await pool.query(`
+      SELECT DISTINCT 
+        chem.id,
+        chem.inchikey,
+        chem.preferred_name,
+        chem.role
+      FROM chemical_property_values AS cpv
+      JOIN chemical_properties AS prop ON prop.id = cpv.property_id
+      JOIN cpa_chemicals AS chem ON chem.id = prop.chemical_id
+      WHERE ${whereClause}
+      ORDER BY chem.preferred_name
+    `, params);
+
+    return result.rows as CpaChemical[];
+  }
+
+  // Get experiments and formulations for a paper using the new view
+  async getPaperExperimentsAndFormulations(paperId: string): Promise<any[]> {
+    const result = await pool.query(`
+      SELECT *
+      FROM v_paper_experiments_formulations_new
+      WHERE paper_id = $1
+      ORDER BY experiment_id, formulation_id, component_id
+    `, [paperId]);
+    
+    return result.rows;
+  }
+}
+
+export const storage = new DatabaseStorage();
+*/

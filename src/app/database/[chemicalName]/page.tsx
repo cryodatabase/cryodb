@@ -397,12 +397,12 @@ export default async function ChemicalPage({ params }: { params: Promise<{ chemi
           </div>
 
           <div className="flex mt-3 gap-4 justify-between items-center">
-            {data.properties[0].synonyms.length !== 0 &&
+            {data?.properties[0]?.synonyms?.length !== 0 &&
               <div className="font-semibold capitalize">
                 <h3 className="text-muted-foreground">
                   Also Known As:
                   <br/>
-                  {data.properties[0].synonyms.map((synonym, index) => (
+                  {data?.properties[0]?.synonyms?.map((synonym, index) => (
                     <span key={index}>
                       {synonym}{index + 1 !== data.properties[0].synonyms.length && ", "}
                     </span>

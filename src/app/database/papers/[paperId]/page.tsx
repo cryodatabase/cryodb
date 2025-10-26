@@ -47,43 +47,43 @@ export default async function PaperPage({ params }: { params: Promise<{paperId: 
   return(
     <div className="min-h-[calc(100vh-428px)] pt-4">
       <div className="mb-2">
-        <ExperimentBreadcrumb paperTitle={data.title} />
+        <ExperimentBreadcrumb paperTitle={data?.title} />
       </div>
-      <h1 className="text-2xl font-semibold">{data.title}</h1>
+      <h1 className="text-2xl font-semibold">{data?.title}</h1>
       <div className="flex justify-between align-center my-2">
         <div className="text-muted-foreground">
           <p>
-            {data.published_year && (
+            {data?.published_year && (
               <span className="font-semibold">
-                {data.published_year}{", "}
+                {data?.published_year}{", "}
               </span>
             )}
-            {data.journal && (
+            {data?.journal && (
               <>
                 <span className="font-semibold">
-                  {data.journal}
+                  {data?.journal}
                 </span>
                 {" - "}
               </>
             )}
 
-            {data.doi ? (
+            {data?.doi ? (
               <a
-                href={`https://doi.org/${data.doi}`}
+                href={`https://doi.org/${data?.doi}`}
                 target="_blank" rel="noopener noreferrer"
                 className="hover:underline"
               >
-                {data.doi}
+                {data?.doi}
               </a>
-            ) : data.id}
+            ) : data?.id}
           </p>
-          <p className="font-semibold">{data.authors_flat}</p>
+          <p className="font-semibold">{data?.authors_flat}</p>
         </div>
 
-        {data.paper_url && (
+        {data?.paper_url && (
           <Button variant={"outline"} size={"icon"} asChild>
             <a
-              href={/^https?:\/\//i.test(data.paper_url) ? data.paper_url : `https://${data.paper_url}`}
+              href={/^https?:\/\//i.test(data?.paper_url) ? data.paper_url : `https://${data?.paper_url}`}
               target="_blank" rel="noopener noreferrer"
             >
               <Link />
@@ -93,11 +93,11 @@ export default async function PaperPage({ params }: { params: Promise<{paperId: 
       </div>
 
       <div className="text-sm">
-        {data.abstract}
+        {data?.abstract}
       </div>
 
       <div className="w-full overflow-x-scroll">
-        <ExperimentTable experiments={responseData.experiments_formulations_data} />
+        <ExperimentTable experiments={responseData?.experiments_formulations_data} />
       </div>
 
       {/*<pre>

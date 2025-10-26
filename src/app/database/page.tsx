@@ -66,7 +66,8 @@ export default async function DatabasePage({ searchParams }: { searchParams: Pro
           .map((result, index) => (
             <Link
               key={index}
-              href={`/database/${encodeURIComponent(result.preferred_name.toLowerCase())}`}
+              // href={`/database/${encodeURIComponent(result.preferred_name.toLowerCase())}`}
+              href={`/database/${encodeURIComponent(result.id.toLowerCase())}`}
               className="group flex flex-col py-4"
             >
               <div className="flex items-center justify-between">

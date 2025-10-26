@@ -6,12 +6,7 @@ export async function GET(req: NextRequest, { params}: { params: Promise<{ name:
   try{
     const { name } = await params;
 
-    /*const [e,p]: [CpaChemical | undefined, PropertiesView[] | undefined] = await Promise.all([
-      await storage.getChemicalFromName(name),
-      await storage.getChemicalPropertiesFromName(name)
-    ]);*/
-    
-    const properties: PropertiesView[] | undefined = await storage.getChemicalPropertiesFromName(name);
+    const properties: PropertiesView[] | undefined = await storage.getChemicalProperties(name);
 
     if (!properties) throw new Error();
 

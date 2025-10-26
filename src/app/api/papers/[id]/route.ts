@@ -5,10 +5,8 @@ import { NextRequest, NextResponse } from "next/server";
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try{
     const { id } = await params;
-    console.log(id);
-    const paper: Paper | undefined = await storage.getPaperById(id);
+    const paper: Paper | undefined = await storage.getPaper(id);
     const experiments_formulations_data: CryopreservationComponent[] | undefined = await storage.getPaperExperimentsAndFormulations(id);
-    console.log(paper);
 
     return NextResponse.json({
       paper,
