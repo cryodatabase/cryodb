@@ -37,8 +37,6 @@ export async function GET(request: Request) {
       }
     });
 
-
-    //return NextResponse.json(papers, { status: 200 });
   } catch (error) {
     console.error('Error fetching users:', error);
     return NextResponse.json(
