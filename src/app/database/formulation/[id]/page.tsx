@@ -1,14 +1,21 @@
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { BookMarked, ExternalLink, ScrollText, TestTubeDiagonal } from "lucide-react";
 import { headers } from "next/headers";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { z } from "zod";
 
+export const revalidate = 86400; // cache aggressively: refresh daily
 
 const BiologicalContextSchema = z.object({
   species: z.string().nullable().optional(),
   organ: z.string().nullable().optional(),
   tissue: z.string().nullable().optional(),
   dimensions: z.string().nullable().optional(),
+  cell_line: z.string().nullable().optional(),
+  health_status: z.string().nullable().optional(),
+  developmental_stage: z.string().nullable().optional()
 });
 
 // FormulationComponent
@@ -325,16 +332,17 @@ const dummyResponse = {
 export default async function Page({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
 
-  /*const headersList = await headers();
+  const headersList = await headers();
   const host = headersList.get("host");
   const protocol = headersList.get("x-forwarded-proto") || "http";
   const url = `${protocol}://${host}/api/formulation/${id}`;
 
   console.log(url);
   const response = await fetch(url);
-  const data = await response.json();
-  const parsed = FormulationDetailSchema.parse(data);*/
-  const parsed = FormulationDetailSchema.safeParse(dummyResponse);
+  const extractedData = await response.json();
+  const parsed = FormulationDetailSchema.safeParse(extractedData);
+  
+  //const parsed = FormulationDetailSchema.safeParse(dummyResponse);
 
   if (!parsed.success) return notFound();
   const data = parsed.data;
@@ -343,64 +351,137 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
     <>
       <div className="mx-auto px-4 py-8 max-w-6xl">
         <div className="">
-          <h1>{data.formulation_label}</h1>
-          <p>{data.formulation_quote}</p>
+          <h1 className="text-3xl font-semibold capitalize">{data.formulation_label}</h1>
+          <p className="text-muted-foreground italic mt-4 mb-6">"{data.formulation_quote}"</p>
         </div>
 
-        <div className="">
-          <div className="">
-            {data.components.map(comp => (
-              <div className="" key={comp.chemical_id}>
-                <Link href={`/database/chemicals/${comp.chemical_id}`}>
-                  <h3>{comp.chemical_name} {comp.role}</h3>
-                </Link>
-                <h3>{comp.concentration} {comp.display_label}</h3>
+
+        <section className="flex flex-col gap-4">
+          {data.components.length > 0 && (
+            <div className="border border-color rounded-2xl p-4">
+              <h3 className="flex items-center gap-2 text-xl font-semibold border-b pb-2 mb-3">
+                <TestTubeDiagonal />
+                Components ({data.components.length})
+              </h3>
+              <div className="flex flex-col gap-2">
+                {data.components.map(comp => (
+                  <div className="flex items-center justify-between" key={comp.chemical_id}>
+                    <div className="flex items-center gap-2">
+                      <Link href={`/database/chemicals/${comp.chemical_id}`} className="text-md font-semibold hover:underline">
+                        {comp.chemical_name}
+                      </Link>
+                      <Badge className="text-sm uppercase" variant="secondary">
+                        {comp.role}
+                      </Badge>
+                      <a
+                        className="ml-2 flex items-center justify-center h-[24px] w-[24px] rounded" 
+                        href={`/database/chemicals/${comp.chemical_id}`} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                      >
+                        <ExternalLink height={18} width={18} />
+                      </a>
+                    </div>
+                    <Badge className="text-md">
+                      {comp.concentration} {comp.unit}
+                    </Badge>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-        </div>
+            </div>
+          )}
 
-        <div className="">
-          <div className="">
-            {data.experiments.map(exp => (
-              <div className="" key={exp.experiment_id}>
-                <h3>{exp.experiment_label}</h3>
-                <p>From formulation: {exp.formulation_label}</p>
+          <div className="border border-color rounded-2xl p-4">
+            <h3 className="flex items-center gap-2 text-xl font-semibold border-b pb-2 mb-3">
+              <BookMarked />
+              Research Studies ({data.experiments.length})
+            </h3>
+            <div className="flex flex-col gap-4">
+              {data.experiments.map(exp => (
+                <div className="border rounded-lg p-4" key={exp.experiment_id}>
+                  <h3 className="font-semibold text-lg">{exp.experiment_label}</h3>
+                  
+                  {exp.formulation_label && (
+                    <p className="text-muted-foreground">
+                      <span className="font-semibold">From formulation:</span>{" "}
+                      {exp.formulation_label}
+                    </p>
+                  )}
+                  
+                  <div className="my-3">
+                    {exp.experiment_quote ? (
+                      <p className="text-muted-foreground italic">{exp.experiment_quote}</p>
+                    ) : (
+                      <p className="text-muted-foreground italic">No Experiment Quote Provided</p>
+                    )}
+                  </div>
 
-                <p>{exp.experiment_quote}</p>
+                  {exp.experiment_method && (
+                    <p className="my-3">
+                      <span className="font-semibold">Method:{" "}</span>
+                      {exp.experiment_method}
+                    </p>
+                  )}
 
-                <p>Method: {exp.experiment_method}</p>
+                  {exp.biological_context && (
+                    <div className="flex items-center flex-wrap gap-x-2 gap-y-1">
+                      {Object.entries(exp.biological_context).map(([key, value], index) => {
+                        if (!value) return null;
 
-                <div className="">
-                  <p>tissue: {exp.biological_context?.tissue}</p>
-                  <p>species: {exp.biological_context?.species}</p>
-                  <p>dimensions: {exp.biological_context?.dimensions}</p>
+                        return (
+                          <Badge variant="outline" className="text-sm" key={`${key}-${index}`}>
+                            <span className="capitalize">{key.replace("_", " ")}:</span> {value}
+                          </Badge>
+                        )
+                      })}
+                    </div>
+                  )}
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
 
-        <div className="">
-          <h3>Source Papers {data.papers.length}</h3>
-          <div className="">
-            {data.papers.map(paper => (
-              <div key={paper.paper_id}>
-                <Link href={`/database/papers/${paper.paper_id}`}>
-                  <h3>{paper.paper_title}</h3>
-                </Link>
-                <p>{paper.paper_authors} - {paper.paper_published_year}</p>
+              
+          <div className="border border-color rounded-2xl p-4">
+            <h3 className="flex items-center gap-2 text-xl font-semibold border-b pb-2 mb-3">
+              <ScrollText />
+              Source Papers ({data.papers.length})
+            </h3>
+            <div className="flex flex-col gap-3">
+              {data.papers.map(paper => (
+                <div className="border border-color rounded-lg p-4" key={paper.paper_id}>
+                  <div className="flex justify-between items-center text-muted-foreground">
+                    <p>{paper.paper_authors}</p>
+                    <p>{paper.paper_published_year}</p>
+                  </div>
 
-                <a href={`https://doi.org/${paper.paper_doi}`} target="_blank" rel="noopener noreferrer"></a>
-              </div>
-            ))}
+                  <div className="mt-2 mb-4 font-semibold text-lg hover:underline">
+                    <Link href={`/database/papers/${paper.paper_id}`}>
+                      <h3>{paper.paper_title}</h3>
+                    </Link>
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <Button variant={"outline"} asChild>
+                      <a href={`https://doi.org/${paper.paper_doi}`} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink height={18} width={18} />
+                        View Paper Data
+                      </a>
+                    </Button>
+
+                    <Button variant={"outline"} asChild>
+                      <a href={`https://doi.org/${paper.paper_doi}`} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink height={18} width={18} />
+                        View Original Paper
+                      </a>
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        </section>
       </div>
-
-    <pre>
-      {JSON.stringify(data, null, 2)}
-    </pre>
     </>
   )
 }
