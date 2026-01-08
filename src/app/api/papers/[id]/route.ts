@@ -55,7 +55,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       return NextResponse.json({ message: "Paper not found" }, { status: 404 });
     };
 
-    return NextResponse.json({ paper, experimentsAndFormulations });
+    return NextResponse.json({ paper, experiments_formulations_data: experimentsAndFormulations });
   } catch (err) {
     console.error(err);
     return NextResponse.json(

@@ -249,6 +249,40 @@ export type PaperData = {
   agent_properties: AgentProperty[];
 };
 
+interface BiologicalPaperContext {
+  organ: string | null;
+  tissue: string | null;
+  species: string | null;
+  cell_line: string | null;
+  dimensions: string | null;
+  health_status: string | null;
+  developmental_stage: string | null;
+};
+
+export interface CryopreservationComponent {
+  paper_id: string;
+  experiment_id: string;
+  experiment_label: string;
+  cooling_method: string;
+  rewarming_method: string;
+  biological_context: BiologicalPaperContext;
+  experiment_quote: string;
+  formulation_id: string;
+  formulation_label: string;
+  formulation_quote: string;
+  component_id: string;
+  component_role: string;
+  amount: string;
+  unit: string;
+  component_quote: string;
+  note: string | null;
+  chemical_id: string;
+  chemical_preferred_name: string;
+  chemical_role: string;
+  alias_id: string;
+  alias_label: string;
+};
+
 export const insertPaperSchema = createInsertSchema(papers).omit({
   id: true,
 });

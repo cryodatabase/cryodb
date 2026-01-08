@@ -966,7 +966,8 @@ import {
   type AdvancedSearchResult,
   type AdvancedSearchExperiment,
   type MoleculeSearchResult,
-  type ChemicalAutocompleteResult
+  type ChemicalAutocompleteResult,
+  CryopreservationComponent
 } from "./schema";
 import { pool } from "./db";
 import { eq, ilike, sql } from "drizzle-orm";
@@ -2780,7 +2781,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Get experiments and formulations for a paper using the new view
-  async getPaperExperimentsAndFormulations(paperId: string): Promise<any[]> {
+  async getPaperExperimentsAndFormulations(paperId: string): Promise<any[]> { // review - change any[] to CryopreservationComponent[]
     const result = await pool.query(`
       SELECT *
       FROM v_paper_experiments_formulations_new
