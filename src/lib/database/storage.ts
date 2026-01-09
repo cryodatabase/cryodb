@@ -20,7 +20,8 @@ import {
   type AdvancedSearchExperiment,
   type MoleculeSearchResult,
   type ChemicalAutocompleteResult,
-  CryopreservationComponent
+  PaperExperimentsAndFormulations,
+  ChemicalPapersAndExperiments
 } from "./schema";
 import { pool } from "./db";
 import { eq, ilike, sql } from "drizzle-orm";
@@ -1145,7 +1146,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Get experiments and formulations for a paper using the new view
-  async getPaperExperimentsAndFormulations(paperId: string): Promise<any[]> { // review - change any[] to CryopreservationComponent[]
+  async getPaperExperimentsAndFormulations(paperId: string): Promise<PaperExperimentsAndFormulations[]> { // done - review - change any[] to CryopreservationComponent[]
     const result = await pool.query(`
       SELECT *
       FROM v_paper_experiments_formulations_new
@@ -1157,7 +1158,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Get papers and experiments for a chemical (reverse lookup)
-  async getChemicalPapersAndExperiments(chemicalId: string): Promise<any[]> {
+  async getChemicalPapersAndExperiments(chemicalId: string): Promise<ChemicalPapersAndExperiments[]> {
     const result = await pool.query(`
       SELECT DISTINCT
         v.paper_id,

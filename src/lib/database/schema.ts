@@ -258,7 +258,7 @@ interface BiologicalPaperContext {
   developmental_stage: string | null;
 };
 
-export interface CryopreservationComponent {
+export interface PaperExperimentsAndFormulations {
   paper_id: string;
   experiment_id: string;
   experiment_label: string;
@@ -282,6 +282,18 @@ export interface CryopreservationComponent {
   alias_label: string;
 };
 
+export interface ChemicalPapersAndExperiments {
+  paper_id: string;
+  experiment_id: string;
+  experiment_label: string;
+  cooling_method: string;
+  rewarming_method: string;
+  biological_context: BiologicalPaperContext;
+  experiment_quote: string;
+  paper_title: string;
+  paper_doi: string;
+  paper_link: string;
+}
 
 export type Paper = typeof papers.$inferSelect;
 export type CpaChemical = typeof cpaChemicals.$inferSelect;

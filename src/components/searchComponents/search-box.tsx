@@ -13,6 +13,7 @@ import { FilterModal } from "@/components/searchComponents/filter-modal"
 
 interface Chemical {
   preferred_name: string;
+  chemical_id: string;
 }
 
 
@@ -187,7 +188,7 @@ export function SearchBox() {
             ) : results.length > 0 ? (
               results.map((result, index) => (
                 <Link
-                  href={`/database/${encodeURIComponent(result.preferred_name.toLowerCase())}`}
+                  href={`/database/${encodeURIComponent(result.chemical_id)}`}
                   key={index}
                   className={cn(
                     "px-2 py-1.5 text-sm text-foreground rounded-sm w-full",

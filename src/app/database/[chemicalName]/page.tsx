@@ -5,6 +5,8 @@ import ReferencePopup from "./refPopup";
 import ReportError from "@/components/entryComponents/report-button";
 import CopyButton from "@/components/entryComponents/copy-button";
 import CitePopup from "@/components/entryComponents/cite-button";
+import { ChemicalPapersAndExperiments, NamesSynonymsView } from "@/lib/database/schema";
+import { FormulationPaginatedResult } from "@/lib/database/storage";
 
 // Enums and Interfaces (unchanged from your code)
 enum ChemicalRole {
@@ -94,6 +96,9 @@ interface AgentProperty {
 
 export interface PropertiesResponse {
   properties: AgentProperty[];
+  synonyms: NamesSynonymsView[];
+  papersAndExperiments: ChemicalPapersAndExperiments[];
+  formulations: FormulationPaginatedResult;
 }
 
 // Mapping for display-friendly property names
@@ -397,16 +402,20 @@ export default async function ChemicalPage({ params }: { params: Promise<{ chemi
           </div>
 
           <div className="flex mt-3 gap-4 justify-between items-center">
-            {data?.properties[0]?.synonyms?.length !== 0 &&
+            {data?.synonyms?.length !== 0 &&
               <div className="font-semibold capitalize">
                 <h3 className="text-muted-foreground">
                   Also Known As:
                   <br/>
-                  {data?.properties[0]?.synonyms?.map((synonym, index) => (
-                    <span key={index}>
-                      {synonym}{index + 1 !== data.properties[0].synonyms.length && ", "}
-                    </span>
-                  ))}
+                  {data?.synonyms?.map((obj, index) => {
+                    if (obj.hidden) return null;
+
+                    return (
+                      <span key={index}>
+                        {obj.synonym}{index + 1 !== data.synonyms.length && ", "}
+                      </span>
+                    )
+                  })}
                 </h3>
               </div>
             }
@@ -424,7 +433,7 @@ export default async function ChemicalPage({ params }: { params: Promise<{ chemi
         </div>
       {/*</div>
 
-      <pre>{JSON.stringify(data, null, 2)}</pre>*/}
+      <pre>{JSON.stringify(data.synonyms, null, 2)}</pre>*/}
     </div>
   );
 }

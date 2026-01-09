@@ -13,6 +13,7 @@ export async function GET(request: Request) {
 
     const response = chemicalResults.slice(0, 6).map((chemical) => ({
       preferred_name: chemical.preferred_name,
+      chemical_id: chemical.id
     }));
 
     // Return results as JSON

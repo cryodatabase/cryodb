@@ -1,5 +1,5 @@
 import { headers } from "next/headers";
-import { CryopreservationComponent, Paper } from "@/lib/database/schema";
+import { PaperExperimentsAndFormulations, Paper } from "@/lib/database/schema";
 import { notFound } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Link } from "lucide-react";
@@ -10,7 +10,7 @@ import { ExperimentBreadcrumb } from "./experimentBreadcrumb";
 
 interface PaperResponse {
   paper: Paper;
-  experiments_formulations_data: CryopreservationComponent[];
+  experiments_formulations_data: PaperExperimentsAndFormulations[];
 }
 
 export const revalidate = 1800;

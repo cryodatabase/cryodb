@@ -73,7 +73,7 @@ export default async function SearchPage({ params }: { params: Promise<{ searchT
             {data.data.map((result, index) => (
               <Link
                 key={index}
-                href={`/database/${encodeURIComponent(result.preferred_name.toLowerCase())}`}
+                href={`/database/${encodeURIComponent(result.id)}`}
                 className="group flex flex-col sm:flex-row gap-4 py-4"
               >
                 <div className="flex-1">

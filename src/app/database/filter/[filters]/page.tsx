@@ -61,7 +61,7 @@ export default async function FilterPage({ params }: { params: Promise<{ filters
           data.map((result, index) => (
             <Link
               key={index}
-              href={`/database/${encodeURIComponent(result.preferred_name.toLowerCase())}`}
+              href={`/database/${encodeURIComponent(result.id)}`}
               className="group flex flex-col py-4"
             >
               <div className="flex items-center justify-between">
