@@ -1125,6 +1125,8 @@ enum ChemicalRole {
   CARRIER = "CARRIER",
 }
 
+type ChemicalRoleType = "CPA" | "ADJUVANT" | "CARRIER";
+
 enum PropertyType {
   MOLECULAR_MASS = "MOLECULAR_MASS",
   SOLUBILITY = "SOLUBILITY",
@@ -1149,6 +1151,31 @@ enum PropertyType {
   OSMOLALITY_OSMOLARITY = "OSMOLALITY_OSMOLARITY",
   POLAR_SURFACE_AREA = "POLAR_SURFACE_AREA",
 }
+
+export type Property =
+  | "MOLECULAR_MASS"
+  | "SOLUBILITY"
+  | "VISCOSITY"
+  | "TG_PRIME"
+  | "PARTITION_COEFFICIENT"
+  | "DIELECTRIC_CONSTANT"
+  | "THERMAL_CONDUCTIVITY"
+  | "HEAT_CAPACITY"
+  | "THERMAL_EXPANSION_COEFFICIENT"
+  | "CRYSTALLIZATION_TEMPERATURE"
+  | "DIFFUSION_COEFFICIENT"
+  | "HYDROGEN_BOND_DONORS_ACCEPTORS"
+  | "SOURCE_OF_COMPOUND"
+  | "GRAS_CERTIFICATION"
+  | "MELTING_POINT"
+  | "HYDROPHOBICITY"
+  | "DENSITY"
+  | "REFRACTIVE_INDEX"
+  | "SURFACE_TENSION"
+  | "PH"
+  | "OSMOLALITY_OSMOLARITY"
+  | "POLAR_SURFACE_AREA";
+
 
 enum PropertyUnit {
   G_PER_MOL = "g/mol",
@@ -1186,21 +1213,24 @@ interface Source {
   quote: string | null;
   paper_id: string | null;
   experiment_quote: string | null;
+  link: string | null;
 }
 
 interface PropertyValue {
-  unit: PropertyUnit | string;
+  value_id: string;
+  unit: PropertyUnit | string | null;
   value: string;
   sources: Source[];
+  hidden: boolean;
 }
 
 interface AgentProperty {
-  synonyms: string[];
-  inchikey: string;
+  //synonyms: string[];
+  //inchikey: string;
   chemical_id: string;
   preferred_name: string;
-  role: ChemicalRole;
-  prop_type: PropertyType;
+  role: ChemicalRoleType;
+  prop_type: Property;
   property_values: PropertyValue[];
 }
 
@@ -1331,6 +1361,7 @@ const transformData = (data: PropertiesResponse): TransformedProperty[] => {
 
     properties.forEach((prop) => {
       prop.property_values.forEach((pv) => {
+        if (!pv.unit) return; // review skipping for null items
         const unit = pv.unit;
         const value = parseValue(pv.value);
         if (!unitCounts[unit]) {

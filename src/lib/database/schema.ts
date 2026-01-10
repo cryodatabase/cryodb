@@ -291,8 +291,8 @@ export interface ChemicalPapersAndExperiments {
   biological_context: BiologicalPaperContext;
   experiment_quote: string;
   paper_title: string;
-  paper_doi: string;
-  paper_link: string;
+  paper_doi: string | null;
+  paper_link: string | null;
 }
 
 export type Paper = typeof papers.$inferSelect;
