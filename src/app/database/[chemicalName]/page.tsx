@@ -9,7 +9,7 @@ import { ChemicalPapersAndExperiments, NamesSynonymsView } from "@/lib/database/
 import { FormulationPaginatedResult } from "@/lib/database/storage";
 import { PropertyTable, transformData } from "./propertyTable";
 import { dummyRes } from "./dummyRes";
-import { FlaskConical } from "lucide-react";
+import { BookMarked, BookX, FlaskConical, FlaskConicalOff } from "lucide-react";
 import { CopyURLButton } from "@/components/copyButton";
 
 
@@ -143,6 +143,16 @@ export default async function ChemicalPage({ params }: { params: Promise<{ chemi
     uri: encodeURIComponent(data.properties[0].preferred_name.toLowerCase())
   };
 
+
+  const uniquePapersAndExperiments = Array.from(
+    new Map(
+      data.papersAndExperiments
+        .filter(p => p.paper_id != null)
+        .map(p => [p.paper_id, p])
+    ).values()
+  );
+
+
   return (
     <div className="pt-4 px-4 min-h-[calc(100vh-428px)] max-w-[1800px] mx-auto">
       {/* Breadcrumb */}
@@ -194,19 +204,56 @@ export default async function ChemicalPage({ params }: { params: Promise<{ chemi
         </div>
       {/*</div>*/}
 
-      <div className="border rounded-lg p-4">
-        <h3 className="font-semibold text-2xl flex items-center gap-1 border-b pb-1">
-          <FlaskConical />
-          Formulations
-        </h3>
 
-        {data.formulations.total >= 1 ? (
-          <div>need to map data</div>
-        ) : (
-          <p className="text-muted-foreground">
-            No well-researched formulations found (showing only formulations with 2+ papers)
-          </p>
-        )}
+      <div className="flex flex-col gap-4">
+        <div className="border rounded-lg p-4">
+          <h3 className="font-semibold text-2xl flex items-center gap-1 border-b pb-2 mb-3">
+            <FlaskConical />
+            Formulations
+            {data.formulations.total > 0 && `(${data.formulations.total})`}
+          </h3>
+
+          {data.formulations.total >= 1 ? (
+            <div>need to map data</div>
+          ) : (
+            <div className="h-24 flex flex-col items-center justify-center gap-2">
+              <FlaskConicalOff className="stroke-[var(--muted-foreground)]" />
+              <p className="text-muted-foreground">
+                No well-researched formulations found (showing only formulations with 2+ papers)
+              </p>
+            </div>
+          )}
+        </div>
+
+        <div className="border rounded-lg p-4">
+          <h3 className="font-semibold text-2xl flex items-center gap-1 border-b pb-2 mb-3">
+            <BookMarked />
+            Research Studies
+          </h3>
+
+          <div className="flex flex-col gap-2">
+          {uniquePapersAndExperiments.length >= 1 ? 
+            uniquePapersAndExperiments.map(paper => {
+              return (
+                <div 
+                  className="border-l-3 border-(--primary)"
+                  key={`${paper.paper_id}-${paper.paper_link}`}
+                >
+                  <h4>{paper.paper_title}</h4>
+                  <pre>{JSON.stringify(paper, null, 2)}</pre>
+                </div>
+              )
+            })
+           : (
+            <div className="h-24 flex flex-col items-center justify-center gap-2">
+              <BookX className="stroke-(--muted-foreground)" />
+              <p className="text-muted-foreground">
+                No research studies found
+              </p>
+            </div>
+          )}
+          </div>
+        </div>
       </div>
 
       <pre>{JSON.stringify(data, null, 2)}</pre>
