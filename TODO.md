@@ -7,4 +7,4 @@
 <Route path="/formulation/:id" component={FormulationDetailPage} /> - route done - page done
 <Route path="/advanced-search" component={AdvancedSearchPage} />
 
-route | page | zod and validation | review
+route | page | performance review (pagination, client side render etc...) | zod and validation | review

@@ -350,10 +350,12 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   return (
     <>
       <div className="mx-auto px-4 py-8 max-w-6xl">
-        <div className="">
+        <div className="flex items-center justify-between">
           <h1 className="text-3xl font-semibold capitalize">{data.formulation_label}</h1>
-          <p className="text-muted-foreground italic mt-4 mb-6">"{data.formulation_quote}"</p>
+          <Badge className="text-md uppercase">Formulation</Badge>
         </div>
+        
+        <p className="text-muted-foreground italic mt-4 mb-6">"{data.formulation_quote}"</p>
 
 
         <section className="flex flex-col gap-4">
@@ -463,7 +465,7 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
                   
                   <div className="flex items-center gap-2">
                     <Button variant={"outline"} asChild>
-                      <a href={`https://doi.org/${paper.paper_doi}`} target="_blank" rel="noopener noreferrer">
+                      <a href={`/database/papers/${paper.paper_id}`} target="_blank" rel="noopener noreferrer">
                         <ExternalLink height={18} width={18} />
                         View Paper Data
                       </a>

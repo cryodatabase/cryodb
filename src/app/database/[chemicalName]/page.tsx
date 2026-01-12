@@ -9,8 +9,10 @@ import { ChemicalPapersAndExperiments, NamesSynonymsView } from "@/lib/database/
 import { FormulationPaginatedResult } from "@/lib/database/storage";
 import { PropertyTable, transformData } from "./propertyTable";
 import { dummyRes } from "./dummyRes";
-import { BookMarked, BookX, FlaskConical, FlaskConicalOff } from "lucide-react";
+import { BookA, BookMarked, BookX, ExternalLink, FlaskConical, FlaskConicalOff } from "lucide-react";
 import { CopyURLButton } from "@/components/copyButton";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 
 
@@ -143,6 +145,7 @@ export default async function ChemicalPage({ params }: { params: Promise<{ chemi
     uri: encodeURIComponent(data.properties[0].preferred_name.toLowerCase())
   };
 
+  const clippedSynonyms = data?.synonyms.slice(0, 4);
 
   const uniquePapersAndExperiments = Array.from(
     new Map(
@@ -172,23 +175,31 @@ export default async function ChemicalPage({ params }: { params: Promise<{ chemi
           </div>
 
           <div className="flex mt-3 gap-4 justify-between items-center">
-            {data?.synonyms?.length !== 0 &&
+            {clippedSynonyms.length !== 0 && (
               <div className="font-semibold capitalize">
                 <h3 className="text-muted-foreground">
                   Also Known As:
                   <br/>
-                  {data?.synonyms?.map((obj, index) => {
+                  {clippedSynonyms.map((obj, index) => {
                     if (obj.hidden) return null;
 
                     return (
                       <span key={index}>
-                        {obj.synonym}{index + 1 !== data.synonyms.length && ", "}
+                        {obj.synonym}{index + 1 !== clippedSynonyms.length && ", "}
                       </span>
                     )
                   })}
+                  {data.synonyms.length > 4 && (
+                    <a 
+                      href="#synonyms"
+                      className="ml-2 text-(--primary) underline"
+                    >
+                      View {data.synonyms.length - 4} more
+                    </a>
+                  )}
                 </h3>
               </div>
-            }
+            )}
 
             <div className="flex items-center gap-2.5">
               <CitePopup citationsData={citationData} />
@@ -236,11 +247,27 @@ export default async function ChemicalPage({ params }: { params: Promise<{ chemi
             uniquePapersAndExperiments.map(paper => {
               return (
                 <div 
-                  className="border-l-3 border-(--primary)"
+                  className="border border-color p-4 rounded-xl"
                   key={`${paper.paper_id}-${paper.paper_link}`}
                 >
-                  <h4>{paper.paper_title}</h4>
-                  <pre>{JSON.stringify(paper, null, 2)}</pre>
+                  <h4 className="text-lg font-semibold mb-1.5">{paper.paper_title}</h4>
+                  <div className="flex items-center gap-2">
+                    <Button variant={"outline"} asChild>
+                      <a href={`/database/papers/${paper.paper_id}`} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink height={18} width={18} />
+                        View Paper Data
+                      </a>
+                    </Button>
+
+                    {paper.paper_doi && 
+                      <Button variant={"outline"} asChild>
+                        <a href={`https://doi.org/${paper.paper_doi}`} target="_blank" rel="noopener noreferrer">
+                          <ExternalLink height={18} width={18} />
+                          View Original Paper
+                        </a>
+                      </Button>
+                    }
+                  </div>
                 </div>
               )
             })
@@ -254,9 +281,31 @@ export default async function ChemicalPage({ params }: { params: Promise<{ chemi
           )}
           </div>
         </div>
+
+        {data.synonyms.length >= 1}
+        <div 
+          className="border border-color p-4 rounded-xl"
+          id="synonyms"
+        >
+          <h3 className="font-semibold text-2xl flex items-center gap-1 border-b pb-2 mb-3">
+            <BookA />
+            Names And Synonyms
+          </h3>
+          <div className="flex items-center flex-wrap gap-x-4 gap-y-2">
+            {data.synonyms.map((synonym) => {
+              if (synonym.hidden) return null;
+
+              return (
+                <Badge key={synonym.synonym} className="text-md" variant={"secondary"}>
+                  {synonym.synonym}
+                </Badge>
+              )}
+            )}
+          </div>
+        </div>
       </div>
 
-      <pre>{JSON.stringify(data, null, 2)}</pre>
+      {/*<pre>{JSON.stringify(data, null, 2)}</pre>*/}
     </div>
   );
 }
