@@ -227,9 +227,9 @@ export default async function ChemicalPage({ params }: { params: Promise<{ chemi
           {data.formulations.total >= 1 ? (
             <div>need to map data</div>
           ) : (
-            <div className="h-24 flex flex-col items-center justify-center gap-2">
+            <div className="min-h-24 flex flex-col items-center justify-center gap-2">
               <FlaskConicalOff className="stroke-[var(--muted-foreground)]" />
-              <p className="text-muted-foreground">
+              <p className="text-muted-foreground text-center">
                 No well-researched formulations found (showing only formulations with 2+ papers)
               </p>
             </div>
@@ -251,7 +251,7 @@ export default async function ChemicalPage({ params }: { params: Promise<{ chemi
                   key={`${paper.paper_id}-${paper.paper_link}`}
                 >
                   <h4 className="text-lg font-semibold mb-1.5">{paper.paper_title}</h4>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center flex-wrap gap-2">
                     <Button variant={"outline"} asChild>
                       <a href={`/database/papers/${paper.paper_id}`} target="_blank" rel="noopener noreferrer">
                         <ExternalLink height={18} width={18} />
@@ -272,9 +272,9 @@ export default async function ChemicalPage({ params }: { params: Promise<{ chemi
               )
             })
            : (
-            <div className="h-24 flex flex-col items-center justify-center gap-2">
+            <div className="min-h-24 flex flex-col items-center justify-center gap-2">
               <BookX className="stroke-(--muted-foreground)" />
-              <p className="text-muted-foreground">
+              <p className="text-muted-foreground text-center">
                 No research studies found
               </p>
             </div>

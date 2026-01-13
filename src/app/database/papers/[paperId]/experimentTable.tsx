@@ -1,71 +1,40 @@
 'use client';
 
-interface BiologicalContext {
-  organ: string | null;
-  tissue: string | null;
-  species: string | null;
-  cell_line: string | null;
-  dimensions: string | null;
-  health_status: string | null;
-  developmental_stage: string | null;
-}
-
-interface Experiment {
-  paper_id: string;
-  experiment_id: string;
-  experiment_label: string;
-  cooling_method: string;
-  rewarming_method: string;
-  biological_context: BiologicalContext;
-  experiment_quote: string;
-  formulation_id: string;
-  formulation_label: string;
-  formulation_quote: string;
-  component_id: string;
-  component_role: string;
-  amount: string;
-  unit: string;
-  component_quote: string | null;
-  note: string | null;
-  chemical_id: string;
-  chemical_preferred_name: string;
-  chemical_role: string;
-  alias_id: string;
-  alias_label: string;
-}
+import { ExperimentFormulation } from "./page";
 
 // Interface for grouped experiment data (for table rows)
 interface GroupedExperiment {
   experiment_label: string;
-  cooling_method: string;
-  rewarming_method: string;
+  cooling_method: string | null;
+  rewarming_method: string | null;
   species: string | null;
+  organ: string | null;
   tissue: string | null;
-  formulation_label: string;
+  formulation_label: string | null;
+  formulation_quote: string | null;
   components: {
-    chemical_preferred_name: string;
-    component_role: string;
-    amount: string;
-    unit: string;
+    chemical_preferred_name: string | null;
+    component_role: string | null;
+    amount: string | null;
+    unit: string | null;
   }[];
 }
 
-interface ExperimentTableProps {
-  experiments: Experiment[];
-}
 
-export default function ExperimentTable({ experiments }: ExperimentTableProps) {
+export default function ExperimentTable({ experiments }: { experiments: ExperimentFormulation[] }) {
   // Group experiments by experiment_id to handle multiple components per experiment
-  const groupedExperiments = experiments.reduce((acc: Record<string, GroupedExperiment>, curr: Experiment) => {
-    const { experiment_id, experiment_label, cooling_method, rewarming_method, biological_context, formulation_label, component_role, chemical_preferred_name, amount, unit } = curr;
+  const groupedExperiments = experiments.reduce((acc: Record<string, GroupedExperiment>, curr: ExperimentFormulation) => {
+    const { experiment_id, experiment_label, cooling_method, rewarming_method, biological_context, formulation_label, formulation_quote, component_role, chemical_preferred_name, amount, unit } = curr;
     if (!acc[experiment_id]) {
       acc[experiment_id] = {
         experiment_label,
         cooling_method,
         rewarming_method,
         species: biological_context.species,
+        organ: biological_context.organ,
         tissue: biological_context.tissue,
         formulation_label,
+        formulation_quote,
         components: [],
       };
     }
@@ -82,7 +51,7 @@ export default function ExperimentTable({ experiments }: ExperimentTableProps) {
   const experimentRows: GroupedExperiment[] = Object.values(groupedExperiments);
 
   return (
-    <div className="overflow-x-auto min-w-[1050px] shadow-md rounded-2xl my-6">
+    <div className="overflow-x-auto min-w-[1650px] shadow-md rounded-2xl my-6">
       <table className="min-w-full border border-color">
         <thead className="">
           <tr className='divide-x divide-y divide-border-color bg-input'>
@@ -92,6 +61,7 @@ export default function ExperimentTable({ experiments }: ExperimentTableProps) {
             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Cooling Method</th>
             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Rewarming Method</th>
             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Species</th>
+            <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Organ</th>
             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Tissue</th>
             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Formulation</th>
             <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider border-b border-color">Components</th>
@@ -104,9 +74,15 @@ export default function ExperimentTable({ experiments }: ExperimentTableProps) {
               <td className="px-6 py-4 text-sm">{row.cooling_method}</td>
               <td className="px-6 py-4 text-sm">{row.rewarming_method}</td>
               <td className="px-6 py-4 text-sm">{row.species ?? 'N/A'}</td>
+              <td className="px-6 py-4 text-sm">{row.organ ?? 'N/A'}</td>
               <td className="px-6 py-4 text-sm">{row.tissue ?? 'N/A'}</td>
-              <td className="px-6 py-4 text-sm">{row.formulation_label}</td>
-              <td className="px-6 py-4 text-sm">
+              <td className="px-6 py-4 text-sm max-w-[550px]">
+                {row.formulation_label}
+                <span className="text-muted-foreground text-xs line-clamp-3">
+                  {row.formulation_quote}
+                </span>
+              </td>
+              <td className="px-6 py-4 text-sm min-w-[300px]">
                 <div className="space-y-1">
                   {row.components.map((component, idx) => (
                     <div key={idx} className="text-xs">
