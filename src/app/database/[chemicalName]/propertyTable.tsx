@@ -296,7 +296,7 @@ export const PropertyTable: React.FC<{ transformedData: TransformedProperty[] }>
                   <span dangerouslySetInnerHTML={{ __html: item.secondary_display_unit }} />
                 ) : ("-")}
               </td>
-              <td className="border border-color px-4 py-2 max-h-[200px] overflow-y-scroll">
+              <td className="border border-color px-4 py-2 max-h-[200px]">
                 <ReferencePopup references={item.reference_paper_map} />
               </td>
             </tr>

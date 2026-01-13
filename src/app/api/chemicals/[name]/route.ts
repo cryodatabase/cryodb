@@ -2,7 +2,7 @@ import { PropertiesView } from "@/lib/database/schema";
 import { storage } from "@/lib/database/storage";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(req: NextRequest, { params}: { params: Promise<{ name: string }> }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ name: string }> }) {
   try{
     const { name: id } = await params;
 
