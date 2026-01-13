@@ -8,12 +8,13 @@ import CitePopup from "@/components/entryComponents/cite-button";
 import { ChemicalPapersAndExperiments, NamesSynonymsView } from "@/lib/database/schema";
 import { FormulationPaginatedResult } from "@/lib/database/storage";
 import { PropertyTable, transformData } from "./propertyTable";
-import { dummyRes } from "./dummyRes";
 import { BookA, BookMarked, BookX, ExternalLink, FlaskConical, FlaskConicalOff } from "lucide-react";
 import { CopyURLButton } from "@/components/copyButton";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
+import { FormulationsTable } from "./formulationsTable";
+import { ResearchStudiesTable } from "./researchStudiesTable";
 
 
 
@@ -105,16 +106,15 @@ export interface PropertiesResponse {
   properties: AgentPropertyGeneric[];
   synonyms: NamesSynonymsView[];
   papersAndExperiments: ChemicalPapersAndExperiments[];
-  formulations: FormulationPaginatedResult;
 }
 
 
 
 
 // Fetch function (unchanged)
-async function fetchChemical(chemicalName: string, url: string): Promise<PropertiesResponse | null> {
+async function fetchChemical(chemId: string, url: string): Promise<PropertiesResponse | null> {
   try {
-    const response = await fetch(`${url}/api/chemicals/${chemicalName}`);
+    const response = await fetch(`${url}/api/chemicals/${chemId}`);
     if (!response.ok) return null;
 
     const data = await response.json(); // Await the JSON parsing
@@ -126,15 +126,15 @@ async function fetchChemical(chemicalName: string, url: string): Promise<Propert
 }
 
 // Main Page Component
-export default async function ChemicalPage({ params }: { params: Promise<{ chemicalName: string }> }) {
-  const { chemicalName } = await params;
+export default async function ChemicalPage({ params }: { params: Promise<{ chemId: string }> }) {
+  const { chemId } = await params;
   
   const headersList = await headers();
   const host = headersList.get("host");
   const protocol = headersList.get("x-forwarded-proto") || "http";
   const url = `${protocol}://${host}`;
 
-  const data = await fetchChemical(chemicalName, url);
+  const data = await fetchChemical(chemId, url);
   //const data = dummyRes;
   if (!data || !data.properties || data.properties.length === 0) return notFound();
 
@@ -218,48 +218,11 @@ export default async function ChemicalPage({ params }: { params: Promise<{ chemi
 
 
       <div className="flex flex-col gap-4">
-        <div className="border rounded-lg p-4">
-          <h3 className="font-semibold text-2xl flex items-center gap-1 border-b pb-2 mb-3">
-            <FlaskConical />
-            Formulations
-            {data.formulations.total > 0 && ` (${data.formulations.total})`}
-          </h3>
+        <FormulationsTable chemicalId={chemId} />
+        <ResearchStudiesTable papersAndExperiments={uniquePapersAndExperiments} />
 
-          {data.formulations.total > 0 ? (
-            <div className="grid grid-cols-[1fr_1fr] gap-2">
-              {data.formulations.formulations.map(form => (
-                <Link key={form.formulation_id} href={`/database/formulation/${form.formulation_id}`}>
-                  <div 
-                    className="border border-color py-2 px-4 rounded-2xl"
-                  >
-                    <div className="flex items-center gap-2 mb-1">
-                      <h4 className="font-semibold">{form.formulation_label}</h4>
-                      <ExternalLink height={16} width={16}/>
-                    </div>
-                    <p className="text-sm line-clamp-1 text-muted-foreground">From: {form.paper_title}</p>
-                    <div className="flex items-center flex-wrap gap-2 mt-2">
-                      <Badge>
-                        {form.paper_count} Papers
-                      </Badge>
-                      <Badge variant={"outline"}>
-                        {form.component_count} Components
-                      </Badge>
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          ) : (
-            <div className="min-h-24 flex flex-col items-center justify-center gap-2">
-              <FlaskConicalOff className="stroke-[var(--muted-foreground)]" />
-              <p className="text-muted-foreground text-center">
-                No well-researched formulations found (showing only formulations with 2+ papers)
-              </p>
-            </div>
-          )}
-        </div>
 
-        <div className="border rounded-lg p-4">
+        {/*<div className="border rounded-lg p-4">
           <h3 className="font-semibold text-2xl flex items-center gap-1 border-b pb-2 mb-3">
             <BookMarked />
             Research Studies
@@ -306,27 +269,28 @@ export default async function ChemicalPage({ params }: { params: Promise<{ chemi
           </div>
         </div>
 
-        {data.synonyms.length >= 1}
-        <div 
-          className="border border-color p-4 rounded-xl"
-          id="synonyms"
-        >
-          <h3 className="font-semibold text-2xl flex items-center gap-1 border-b pb-2 mb-3">
-            <BookA />
-            Names And Synonyms
-          </h3>
-          <div className="flex items-center flex-wrap gap-x-4 gap-y-2">
-            {data.synonyms.map((synonym) => {
-              if (synonym.hidden) return null;
+        {data.synonyms.length >= 1 && (
+          <div 
+            className="border border-color p-4 rounded-xl"
+            id="synonyms"
+          >
+            <h3 className="font-semibold text-2xl flex items-center gap-1 border-b pb-2 mb-3">
+              <BookA />
+              Names And Synonyms
+            </h3>
+            <div className="flex items-center flex-wrap gap-x-4 gap-y-2">
+              {data.synonyms.map((synonym) => {
+                if (synonym.hidden) return null;
 
-              return (
-                <Badge key={synonym.synonym} className="text-md" variant={"secondary"}>
-                  {synonym.synonym}
-                </Badge>
+                return (
+                  <Badge key={synonym.synonym} className="text-md" variant={"secondary"}>
+                    {synonym.synonym}
+                  </Badge>
+                )}
               )}
-            )}
+            </div>
           </div>
-        </div>
+        )}*/}
       </div>
 
       {/*<pre>{JSON.stringify(data, null, 2)}</pre>*/}

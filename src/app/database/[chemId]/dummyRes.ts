@@ -1,4 +1,4 @@
-import { PropertiesResponse } from "./page";
+/*import { PropertiesResponse } from "./page";
 
 export const dummyRes: PropertiesResponse = {
   "properties": [
@@ -1108,4 +1108,4 @@ export const dummyRes: PropertiesResponse = {
     "page": 1,
     "limit": 10
   }
-};
+};*/
