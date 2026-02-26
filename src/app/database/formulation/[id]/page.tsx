@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import { z } from "zod";
 import { ResearchTable } from "./researchTable";
 import { SourcePapersTable } from "./sourcePapersTable";
+import { DatabaseBreadcrumb } from "@/components/databaseBreadcrumbs";
 
 export const revalidate = 86400; // cache aggressively: refresh daily
 
@@ -86,7 +87,8 @@ export default async function Page({ params }: { params: Promise<{ id: string }>
   return (
     <>
       <div className="mx-auto px-4 py-8 max-w-6xl">
-        <div className="flex items-center justify-between">
+        <DatabaseBreadcrumb directoryName="Chemicals" pageName={data.formulation_label} />
+        <div className="flex items-center justify-between mt-1.5">
           <h1 className="text-3xl font-semibold capitalize">{data.formulation_label}</h1>
           <Badge className="text-md uppercase">Formulation</Badge>
         </div>

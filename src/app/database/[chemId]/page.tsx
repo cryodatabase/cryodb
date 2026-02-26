@@ -15,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { FormulationsTable } from "./formulationsTable";
 import { ResearchStudiesTable } from "./researchStudiesTable";
+import { DatabaseBreadcrumb } from "@/components/databaseBreadcrumbs";
 
 
 
@@ -160,7 +161,7 @@ export default async function ChemicalPage({ params }: { params: Promise<{ chemI
   return (
     <div className="pt-4 px-4 min-h-[calc(100vh-428px)] max-w-[1800px] mx-auto">
       {/* Breadcrumb */}
-      <SearchBreadcrumb agentName={data.properties[0].preferred_name} />
+      <DatabaseBreadcrumb directoryName="Chemicals" pageName={data.properties[0].preferred_name} />
 
       {/* Content Box */}
       {/*<div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] pt-2">*/}
@@ -267,7 +268,7 @@ export default async function ChemicalPage({ params }: { params: Promise<{ chemI
             </div>
           )}
           </div>
-        </div>
+        </div>*/}
 
         {data.synonyms.length >= 1 && (
           <div 
@@ -290,7 +291,7 @@ export default async function ChemicalPage({ params }: { params: Promise<{ chemI
               )}
             </div>
           </div>
-        )}*/}
+        )}
       </div>
 
       {/*<pre>{JSON.stringify(data, null, 2)}</pre>*/}

@@ -6,6 +6,7 @@ import { Link } from "lucide-react";
 import ExperimentTable from "./experimentTable";
 import { ExperimentBreadcrumb } from "./experimentBreadcrumb";
 import z from "zod";
+import { DatabaseBreadcrumb } from "@/components/databaseBreadcrumbs";
 
 export const revalidate = 1800;
 
@@ -194,9 +195,9 @@ export default async function PaperPage({ params }: { params: Promise<{paperId: 
   return(
     <div className="min-h-[calc(100vh-428px)] pt-4">
       <div className="mb-2">
-        <ExperimentBreadcrumb paperTitle={data?.title} />
+        <DatabaseBreadcrumb directoryName="Papers" pageName={data.title} />
       </div>
-      <h1 className="text-2xl font-semibold">{data?.title}</h1>
+      <h1 className="text-2xl font-semibold">{data.title}</h1>
       <div className="flex justify-between align-center my-2">
         <div className="text-muted-foreground">
           <p>
